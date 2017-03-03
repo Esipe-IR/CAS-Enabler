@@ -1,0 +1,10 @@
+<?php
+
+function getDB() {
+    $dbname = "dbname";
+    $host = "host";
+    $dbuser = "user";
+    $dbpass = "password";
+    
+    return new PDO("pgsql:dbname=$dbname;host=$host", $dbuser, $dbpass);
+}
