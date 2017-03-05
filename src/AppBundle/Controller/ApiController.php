@@ -5,44 +5,9 @@ namespace AppBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ApiController extends Controller
 {
-    private function sendError($code, $msg, $callback)
-    {
-        $response = new JsonResponse();
-        $response->setStatusCode(400);
-        $response->setData(array(
-            'status' => false,
-            'code' => $code,
-            'data' => $msg
-        ));
-
-        if ($callback) {
-            $response->setCallback($callback);
-        }
-
-        return $response;
-    }
-
-    private function sendSuccess($body, $callback)
-    {
-        $response = new JsonResponse();
-        $response->setStatusCode(200);
-        $response->setData(array(
-            'status' => true,
-            'code' => 0,
-            'data' => $body
-        ));
-
-        if ($callback) {
-            $response->setCallback($callback);
-        }
-
-        return $response;
-    }
-
     /**
      * @Route("/~vrasquie/cas/api/service", name="api_service")
      */
