@@ -21,19 +21,7 @@ class User
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name", type="string", length=255)
-     */
     private $name;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="lastname", type="string", length=255)
-     */
     private $lastname;
 
     /**
@@ -42,33 +30,9 @@ class User
      * @ORM\Column(name="uid", type="string", length=255)
      */
     private $uid;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="email", type="string", length=255)
-     */
     private $email;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="etu_id", type="integer", unique=true)
-     */
     private $etuId;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="class", type="string", length=255)
-     */
     private $class;
-
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="status", type="boolean")
-     */
     private $status;
 
     /**

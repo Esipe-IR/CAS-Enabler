@@ -63,13 +63,29 @@ class ApiController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository("AppBundle:User")->findOneBy(array("uid" => $casUser->getUsername()));
+
+        if (!$user) {
+            $tmpUser = new User();
+            $tmpUser->setUid($casUser->getUsername());
+            $em->persist($tmpUser);
+            $em->flush();
+        }
+
         $isAllow = $em->getRepository("AppBundle:Service")->isAllow($casUser->getUsername());
 
         if (!$isAllow) {
             return $this->sendError(3, "Unallowed service", $callback);
         }
 
-        return $this->sendSuccess("", $callback);
+        $ldapService = $this->get("ldap.service");
+        $ldapUser = $ldapService->getUser($casUser->getUsername());
+        $user = $ldapService->transformToUser($ldapUser);
+
+        $askService = $this->get("ask.service");
+        $response = $askService->ask($service, $user);
+
+        return $this->sendSuccess($response, $callback);
     }
 
     /**
@@ -88,12 +104,15 @@ class ApiController extends Controller
         $user = $em->getRepository("AppBundle:User")->findOneBy(array("uid" => $casUser->getUsername()));
 
         if (!$user) {
-            $ldapService = $this->get("ldap.service");
-            $ldapUser = $ldapService->getUser($casUser->getUsername());
-            $user = $ldapService->transformToUser($ldapUser);
-            $em->persist($user);
+            $tmpUser = new User();
+            $tmpUser->setUid($casUser->getUsername());
+            $em->persist($tmpUser);
             $em->flush();
         }
+
+        $ldapService = $this->get("ldap.service");
+        $ldapUser = $ldapService->getUser($casUser->getUsername());
+        $user = $ldapService->transformToUser($ldapUser);
 
         return $this->sendSuccess($user->toArray(), $callback);
     }

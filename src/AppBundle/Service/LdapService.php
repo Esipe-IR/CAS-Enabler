@@ -8,12 +8,14 @@ class LdapService
 {
     private $host;
     private $env;
+    private $classMapping;
     private $ds;
 
-    public function __construct($host, $env)
+    public function __construct($host, $env, $classMapping)
     {
         $this->host = $host;
         $this->env = $env;
+        $this->classMapping = $classMapping;
         $this->ds = null;
     }
 
@@ -26,7 +28,29 @@ class LdapService
     public function getUser($uid)
     {
         if ($this->env !== "PROD") {
-            return array();
+            return array(
+                "homedirectory" => array(
+                    0 => "/home/6ir1/test"
+                ),
+                "givenname" => array(
+                    0 => "test"
+                ),
+                "sn" => array(
+                    0 => "test"
+                ),
+                "uid" => array(
+                    0 => "test"
+                ),
+                "mail" => array(
+                    0 => "test@test.fr"
+                ),
+                "supannetuid" => array(
+                    0 => "424242"
+                ),
+                "accountstatus" => array(
+                    0 => true                    
+                )
+            );
         }
 
         if (!$this->ds) {
@@ -47,8 +71,13 @@ class LdapService
     public function homeDirToClass($homeDir)
     {
         $arr = explode("/", $homeDir);
-        
-        return $arr[2];
+        $class = $arr[2];
+
+        if (isset($this->classMapping[$class])) {
+            $class = $this->classMapping[$class];
+        }
+
+        return $class;
     }
 
     public function transformToUser($ldapUser)

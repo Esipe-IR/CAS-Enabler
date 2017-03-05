@@ -1,9 +1,13 @@
 # Learn more about services, parameters and containers at
 # http://symfony.com/doc/current/service_container.html
 parameters:
-#    parameter_name: value
+  class:
+    6ir1: Esipe/Informatique et Réseaux 1
 
 services:
   ldap.service:
       class: AppBundle\Service\LdapService
-      arguments: ["%ldap_host%", "%env%"]
+      arguments: ["%ldap_host%", "%env%", "%class%"]
+
+  ask.service:
+      class: AppBundle\Service\AskService
