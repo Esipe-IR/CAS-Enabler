@@ -8,49 +8,63 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ApiController extends Controller
 {
+    private function checkIfExist($userName)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository("AppBundle:User")->findOneBy(array("uid" => $userName));
+
+        if (!$user) {
+            $tmpUser = new User();
+            $tmpUser->setUid($userName);
+
+            $em->persist($tmpUser);
+            $em->flush();
+        }
+    }
+
+    private function getLdapUser($userName)
+    {
+        $ldapService = $this->get("ldap.service");
+        $ldapUser = $ldapService->getUser($userName);
+        
+        return $ldapService->transformToUser($ldapUser);
+    }
+
     /**
      * @Route("/~vrasquie/cas/api/service", name="api_service")
      */
     public function serviceAction(Request $request)
     {
+        $responseService = $this->get("response.service");
         $casUser = $this->get('security.token_storage')->getToken()->getUser();
-        $service = $request->query->get("service");
-        $callback = $request->query->get("callback");
 
         if (!$casUser) {
-            return $this->sendError(1, "Not connected", $callback);
+            return $responseService->sendError(1, "Not connected", $callback);
         }
 
-        $ticket = $request->cookies->get("PHPSESSID");
+        $casUser = $casUser->getUsername();
+        $service = $request->query->get("service");
+        $callback = $request->query->get("callback");
         
         if (!$service) {
-            return $this->sendError(2, "Undefined service", $callback);
+            return $responseService->sendError(2, "Undefined service", $callback);
         }
 
         $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository("AppBundle:User")->findOneBy(array("uid" => $casUser->getUsername()));
+        $this->checkIfExist($casUser);
 
-        if (!$user) {
-            $tmpUser = new User();
-            $tmpUser->setUid($casUser->getUsername());
-            $em->persist($tmpUser);
-            $em->flush();
-        }
-
-        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($casUser->getUsername());
+        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($casUser);
 
         if (!$isAllow) {
-            return $this->sendError(3, "Unallowed service", $callback);
+            return $responseService->sendError(3, "Unallowed service", $callback);
         }
 
-        $ldapService = $this->get("ldap.service");
-        $ldapUser = $ldapService->getUser($casUser->getUsername());
-        $user = $ldapService->transformToUser($ldapUser);
+        $user = $this->getLdapUser($casUser);
 
         $askService = $this->get("ask.service");
         $response = $askService->ask($service, $user);
 
-        return $this->sendSuccess($response, $callback);
+        return $responseService->sendSuccess($response, $callback);
     }
 
     /**
@@ -60,25 +74,15 @@ class ApiController extends Controller
     {
         $casUser = $this->get('security.token_storage')->getToken()->getUser();
         $callback = $request->query->get("callback");
+        $responseService = $this->get("response.service");
 
         if (!$casUser) {
-            return $this->sendError(1, "Not connected", $callback);
+            return $responseService->sendError(1, "Not connected", $callback);
         }
 
-        $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository("AppBundle:User")->findOneBy(array("uid" => $casUser->getUsername()));
+        $this->checkIfExist($casUser->getUsername());
+        $user = $this->getLdapUser($casUser->getUsername());
 
-        if (!$user) {
-            $tmpUser = new User();
-            $tmpUser->setUid($casUser->getUsername());
-            $em->persist($tmpUser);
-            $em->flush();
-        }
-
-        $ldapService = $this->get("ldap.service");
-        $ldapUser = $ldapService->getUser($casUser->getUsername());
-        $user = $ldapService->transformToUser($ldapUser);
-
-        return $this->sendSuccess($user->toArray(), $callback);
+        return $responseService->sendSuccess($user->toArray(), $callback);
     }
 }

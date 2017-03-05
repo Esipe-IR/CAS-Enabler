@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ResponseService
 {
-    private function sendError($code, $msg, $callback)
+    public function sendError($code, $msg, $callback)
     {
         $response = new JsonResponse();
         $response->setStatusCode(400);
@@ -23,7 +23,7 @@ class ResponseService
         return $response;
     }
 
-    private function sendSuccess($body, $callback)
+    public function sendSuccess($body, $callback)
     {
         $response = new JsonResponse();
         $response->setStatusCode(200);

@@ -25,36 +25,12 @@ class MainController extends Controller
      */
     public function serviceAllowAction(Request $request)
     {
-        $casService = $this->get("cas.service");
-        $auth = $casService->check();
         $service = $request->query->get("service");
-
-        if (!$auth) {
-        }
 
         if (!$service) {
         }
 
-        $casUser = $casService->getUser();
-
         return $this->render('default/service.allow.html.twig');
-    }
-
-    private function rrmdir($dir) {
-        $objects = scandir($dir); 
-
-        foreach ($objects as $object) { 
-            if ($object != "." && $object != "..") { 
-                if (is_dir($dir."/".$object)) {
-                    $this->rrmdir($dir."/".$object);
-                }
-                else {
-                    unlink($dir."/".$object);
-                } 
-            }
-        }
-
-        rmdir($dir);
     }
 
     /**
@@ -62,7 +38,10 @@ class MainController extends Controller
      */
     public function flushAction(Request $request)
     {
-        $this->rrmdir($this->get('kernel')->getRootDir() . "/../var/cache");
+        $dir = $this->get("kernel")->getRootDir() . "/../var/cache";
+
+        $flushService = $this->get("flush.service");
+        $flushService->removeDir($dir);
 
         return new Response("Delete");
     }

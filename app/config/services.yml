@@ -11,3 +11,9 @@ services:
 
   ask.service:
       class: AppBundle\Service\AskService
+  
+  response.service:
+      class: AppBundle\Service\ResponseService
+
+  flush.service:
+      class: AppBundle\Service\FlushService
