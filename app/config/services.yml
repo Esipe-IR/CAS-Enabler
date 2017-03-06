@@ -4,10 +4,21 @@ parameters:
   class:
     6ir1: Esipe/Informatique et Réseaux 1
 
+  cas_enabler_auth:
+      username_attribute: user
+      query_service_parameter: ticket
+      query_ticket_parameter: service
+      options:
+          env: %kernel.environment%
+      server_login_url: https://cas.u-pem.fr/login
+      server_validation_url: https://cas.u-pem.fr/serviceValidate
+      server_logout_url: https://cas.u-pem.fr/logout
+      xml_namespace: cas
+
 services:
   ldap.service:
       class: AppBundle\Service\LdapService
-      arguments: ["%ldap_host%", "%env%", "%class%"]
+      arguments: ["%ldap_host%", "%kernel.environment%", "%class%"]
 
   ask.service:
       class: AppBundle\Service\AskService
@@ -17,3 +28,7 @@ services:
 
   flush.service:
       class: AppBundle\Service\FlushService
+
+  cas.enabler.authenticator:
+      class: AppBundle\Security\CasEnablerAuthenticator
+      arguments: ["%cas_enabler_auth%"]
