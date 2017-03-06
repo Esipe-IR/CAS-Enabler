@@ -32,9 +32,9 @@ class ApiController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/service/:serviceId", name="api_service")
+     * @Route("/~vrasquie/cas/api/service/{id}", name="api_service")
      */
-    public function serviceAction(Request $request, $serviceId)
+    public function serviceAction(Request $request, $id)
     {
         $casUser = $this->getUser();
         $callback = $request->query->get("callback");
@@ -48,13 +48,13 @@ class ApiController extends Controller
         $this->checkIfExist($casUser);
 
         $em = $this->getDoctrine()->getManager();
-        $service = $em->getRepository("AppBundle:Service")->find($serviceId);
+        $service = $em->getRepository("AppBundle:Service")->find($id);
 
         if (!$service) {
             return $responseService->sendError(2, "Nonexistent service", $callback);
         }
 
-        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($serviceId, $casUser);
+        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($id, $casUser);
 
         if (!$isAllow) {
             return $responseService->sendError(3, "Unallowed service", $callback);
