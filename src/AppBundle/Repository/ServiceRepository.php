@@ -10,12 +10,14 @@ namespace AppBundle\Repository;
  */
 class ServiceRepository extends \Doctrine\ORM\EntityRepository
 {
-    public function isAllow($uid)
+    public function isAllow($service, $uid)
     {
         return $this->createQueryBuilder('s')
         ->innerJoin('s.users', 'u')
         ->where('u.uid = :user')
+        ->andWhere('s.id = :service')
         ->setParameter('user', $uid)
+        ->setParameter("service", $service)
         ->setMaxResults(1)
         ->getQuery()
         ->getOneOrNullResult();
