@@ -2,6 +2,7 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Entity\User;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,29 +32,29 @@ class ApiController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/service", name="api_service")
+     * @Route("/~vrasquie/cas/api/service/:serviceId", name="api_service")
      */
-    public function serviceAction(Request $request)
+    public function serviceAction(Request $request, $serviceId)
     {
+        $casUser = $this->getUser();
+        $callback = $request->query->get("callback");
         $responseService = $this->get("response.service");
-        $casUser = $this->get('security.token_storage')->getToken()->getUser();
 
         if (!$casUser) {
             return $responseService->sendError(1, "Not connected", $callback);
         }
-
-        $casUser = $casUser->getUsername();
-        $service = $request->query->get("service");
-        $callback = $request->query->get("callback");
         
-        if (!$service) {
-            return $responseService->sendError(2, "Undefined service", $callback);
-        }
-
-        $em = $this->getDoctrine()->getManager();
+        $casUser = $casUser->getUsername();
         $this->checkIfExist($casUser);
 
-        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($casUser);
+        $em = $this->getDoctrine()->getManager();
+        $service = $em->getRepository("AppBundle:Service")->find($serviceId);
+
+        if (!$service) {
+            return $responseService->sendError(2, "Nonexistent service", $callback);
+        }
+
+        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($serviceId, $casUser);
 
         if (!$isAllow) {
             return $responseService->sendError(3, "Unallowed service", $callback);
@@ -61,8 +62,12 @@ class ApiController extends Controller
 
         $user = $this->getLdapUser($casUser);
 
-        $askService = $this->get("ask.service");
-        $response = $askService->ask($service, $user);
+        try {
+            $askService = $this->get("ask.service");
+            $response = $askService->ask($service, $user);
+        } catch (\Exception $e) {
+            return $responseService->sendError(4, "Service error", $callback);
+        }
 
         return $responseService->sendSuccess($response, $callback);
     }
@@ -72,7 +77,7 @@ class ApiController extends Controller
      */
     public function userAction(Request $request)
     {
-        $casUser = $this->get('security.token_storage')->getToken()->getUser();
+        $casUser = $this->getUser();
         $callback = $request->query->get("callback");
         $responseService = $this->get("response.service");
 
@@ -80,8 +85,10 @@ class ApiController extends Controller
             return $responseService->sendError(1, "Not connected", $callback);
         }
 
-        $this->checkIfExist($casUser->getUsername());
-        $user = $this->getLdapUser($casUser->getUsername());
+        $casUser = $casUser->getUsername();
+        $this->checkIfExist($casUser);
+        
+        $user = $this->getLdapUser($casUser);
 
         return $responseService->sendSuccess($user->toArray(), $callback);
     }
