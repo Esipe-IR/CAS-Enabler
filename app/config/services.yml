@@ -1,15 +1,34 @@
 # Learn more about services, parameters and containers at
 # http://symfony.com/doc/current/service_container.html
 parameters:
-  class:
-    6ir1: Esipe/Informatique et Réseaux 1
+  class_mapping:
+      6ir1: Esipe/Informatique et Réseaux 1
+
+  fake_ldap_user:
+      homedirectory:
+        - /home/6ir1/test
+      givenname:
+        - test
+      sn:
+        - test
+      uid:
+        - test
+      mail:
+        - test@test.fr
+      supannetuid:
+        - 424242
+      accountstatus:
+        - true
+
+  fake_user: test
 
   cas_enabler_auth:
       username_attribute: user
       query_service_parameter: ticket
       query_ticket_parameter: service
       options:
-          env: %kernel.environment%
+          env: "%kernel.environment%"
+          default_user: "%fake_user%"
       server_login_url: https://cas.u-pem.fr/login
       server_validation_url: https://cas.u-pem.fr/serviceValidate
       server_logout_url: https://cas.u-pem.fr/logout
@@ -18,7 +37,7 @@ parameters:
 services:
   ldap.service:
       class: AppBundle\Service\LdapService
-      arguments: ["%ldap_host%", "%kernel.environment%", "%class%"]
+      arguments: ["%ldap_host%", "%kernel.environment%", "%class_mapping%",  "%fake_ldap_user%"]
 
   ask.service:
       class: AppBundle\Service\AskService

@@ -61,11 +61,8 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
             }
         }
 
-
-        if ($this->options['env'] === "dev") {
-            return array(
-                "user" => "test"
-            );
+        if ($this->options["env"] === "dev") {
+            return $this->options["default_user"];
         }
 
         return null;
