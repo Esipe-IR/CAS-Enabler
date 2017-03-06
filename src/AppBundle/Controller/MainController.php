@@ -14,10 +14,12 @@ class MainController extends Controller
      */
     public function indexAction(Request $request)
     {
-        // replace this example code with whatever you need
-        return $this->render('default/index.html.twig', [
-            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-        ]);
+        $em = $this->getDoctrine()->getManager();
+        $services = $em->getRepository("AppBundle:Service")->findAll();
+
+        return $this->render('default/index.html.twig', array(
+            "services" => $services
+        ));
     }
 
     /**

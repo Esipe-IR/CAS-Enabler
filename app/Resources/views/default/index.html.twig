@@ -11,9 +11,16 @@
                 <p>
                     You can now create or allow service to be able to use it as a way of authentification.
                 </p>
+
+                <p>Services: </p>
+                <ul>
+                    {% for service in services %}
+                        <li>{{ service.name }} <a href="{{ path('api_allow', {id: service.id}) }}">Allow</a></li>
+                    {% endfor %}
+                </ul>
+
                 <p>
                     <button>Create service</button>
-                    <button>Allow service</button>
                 </p>
             </div>
         </div>

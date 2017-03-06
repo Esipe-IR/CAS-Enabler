@@ -1,5 +1,3 @@
-# Learn more about services, parameters and containers at
-# http://symfony.com/doc/current/service_container.html
 parameters:
   class_mapping:
       6ir1: Esipe/Informatique et Réseaux 1
@@ -20,7 +18,8 @@ parameters:
       accountstatus:
         - true
 
-  fake_user: test
+  fake_user: 
+      user: test
 
   cas_enabler_auth:
       username_attribute: user
@@ -37,7 +36,7 @@ parameters:
 services:
   ldap.service:
       class: AppBundle\Service\LdapService
-      arguments: ["%ldap_host%", "%kernel.environment%", "%class_mapping%",  "%fake_ldap_user%"]
+      arguments: ["%ldap_host%", "%kernel.environment%", "%class_mapping%", "%fake_ldap_user%"]
 
   ask.service:
       class: AppBundle\Service\AskService

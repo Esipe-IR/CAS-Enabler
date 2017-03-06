@@ -15,12 +15,14 @@ class ApiController extends Controller
         $user = $em->getRepository("AppBundle:User")->findOneBy(array("uid" => $userName));
 
         if (!$user) {
-            $tmpUser = new User();
-            $tmpUser->setUid($userName);
+            $user = new User();
+            $user->setUid($userName);
 
-            $em->persist($tmpUser);
+            $em->persist($user);
             $em->flush();
         }
+
+        return $user;
     }
 
     private function getLdapUser($userName)
@@ -32,7 +34,7 @@ class ApiController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/service/{id}", name="api_service")
+     * @Route("/~vrasquie/cas/api/service/call/{id}", name="api_service")
      */
     public function serviceAction(Request $request, $id)
     {
@@ -73,7 +75,7 @@ class ApiController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/user", name="api_user")
+     * @Route("/~vrasquie/cas/api/user/info", name="api_user")
      */
     public function userAction(Request $request)
     {
@@ -91,5 +93,32 @@ class ApiController extends Controller
         $user = $this->getLdapUser($casUser);
 
         return $responseService->sendSuccess($user->toArray(), $callback);
+    }
+
+    /**
+     * @Route("/~vrasquie/cas/api/service/allow/{id}", name="api_allow")
+     */
+    private function allowAction(Request $request, $id)
+    {
+        $casUser = $this->getUser();
+        $responseService = $this->get("response.service");
+
+        if (!$casUser) {
+            return $responseService->sendError(1, "Not connected");
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        $service = $em->getRepository("AppBundle:Service")->find($id);
+
+        if (!$service) {
+            return $responseService->sendError(2, "Nonexistent service");
+        }
+
+        $casUser = $casUser->getUsername();
+        $user = $this->checkIfExist($casUser);
+        $user->addService($service);
+        $em->flush();
+
+        $responseService->sendSuccess("Done");
     }
 }
