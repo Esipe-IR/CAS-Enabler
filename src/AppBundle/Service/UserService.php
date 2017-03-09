@@ -64,6 +64,7 @@ class UserService
     public function getUserByUid($uid)
     {
         $user = $this->checkIfExist($uid);
+        
         return $this->getLdapUser($user);
     }
 }

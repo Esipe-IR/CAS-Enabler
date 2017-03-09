@@ -37,15 +37,20 @@ services:
   ldap.service:
       class: AppBundle\Service\LdapService
       arguments: ["%ldap_host%", "%kernel.environment%", "%class_mapping%", "%fake_ldap_user%"]
-
-  ask.service:
-      class: AppBundle\Service\AskService
   
   response.service:
       class: AppBundle\Service\ResponseService
 
   flush.service:
       class: AppBundle\Service\FlushService
+
+  user.service:
+      class: AppBundle\Service\UserService
+      arguments: ["@doctrine.entity_manager", "@ldap.service"]
+
+  service.service:
+      class: AppBundle\Service\ServiceService
+      arguments: ["@doctrine.entity_manager"]
 
   cas.enabler.authenticator:
       class: AppBundle\Security\CasEnablerAuthenticator
