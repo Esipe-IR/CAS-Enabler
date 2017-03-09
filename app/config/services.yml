@@ -36,7 +36,7 @@ parameters:
 services:
   ldap.service:
       class: AppBundle\Service\LdapService
-      arguments: ["%ldap_host%", "%kernel.environment%", "%class_mapping%", "%fake_ldap_user%"]
+      arguments: ["%ldap_host%", "%kernel.environment%", "%fake_ldap_user%"]
   
   response.service:
       class: AppBundle\Service\ResponseService
@@ -46,11 +46,11 @@ services:
 
   user.service:
       class: AppBundle\Service\UserService
-      arguments: ["@doctrine.entity_manager", "@ldap.service"]
+      arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%class_mapping%"]
 
   service.service:
       class: AppBundle\Service\ServiceService
-      arguments: ["@doctrine.entity_manager"]
+      arguments: ["@doctrine.orm.entity_manager"]
 
   cas.enabler.authenticator:
       class: AppBundle\Security\CasEnablerAuthenticator
