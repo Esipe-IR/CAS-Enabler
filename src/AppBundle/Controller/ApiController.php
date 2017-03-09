@@ -9,9 +9,9 @@ use Symfony\Component\HttpFoundation\Request;
 class ApiController extends Controller
 {
     /**
-     * @Route("/~vrasquie/cas/api/service/call/{id}", name="api_service")
+     * @Route("/~vrasquie/cas/api/service/call/{uid}", name="api_service")
      */
-    public function serviceAction(Request $request, $id)
+    public function serviceAction(Request $request, $uid)
     {
         $casUser = $this->getUser();
         $callback = $request->query->get("callback");
@@ -25,13 +25,13 @@ class ApiController extends Controller
         $user = $userService->getUserByUid($casUser->getUsername());
 
         $em = $this->getDoctrine()->getManager();
-        $service = $em->getRepository("AppBundle:Service")->find($id);
+        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
 
         if (!$service) {
             return $responseService->sendError(2, "Nonexistent service", $callback);
         }
 
-        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($id, $casUser);
+        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $casUser);
 
         if (!$isAllow) {
             return $responseService->sendError(3, "Unallowed service", $callback);

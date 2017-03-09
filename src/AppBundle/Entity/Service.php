@@ -25,7 +25,14 @@ class Service
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=255, unique=true)
+     * @ORM\Column(name="uid", type="string", length=255, unique=true)
+     */
+    private $uid;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="name", type="string", length=255)
      */
     private $name;
 
@@ -87,6 +94,30 @@ class Service
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Set uid
+     *
+     * @param string $uid
+     *
+     * @return Service
+     */
+    public function setUid($uid)
+    {
+        $this->uid = $uid;
+
+        return $this;
+    }
+
+    /**
+     * Get uid
+     *
+     * @return string
+     */
+    public function getUid()
+    {
+        return $this->uid;
     }
 
     /**
