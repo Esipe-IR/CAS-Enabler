@@ -16,23 +16,14 @@ class MainController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
         $services = $em->getRepository("AppBundle:Service")->findAll();
+        
+        if ($request->getMethod() === "POST") {
+            
+        }
 
         return $this->render('default/index.html.twig', array(
             "services" => $services
         ));
-    }
-
-    /**
-     * @Route("/~vrasquie/cas/service/allow", name="service_allow")
-     */
-    public function serviceAllowAction(Request $request)
-    {
-        $service = $request->query->get("service");
-
-        if (!$service) {
-        }
-
-        return $this->render('default/service.allow.html.twig');
     }
 
     /**

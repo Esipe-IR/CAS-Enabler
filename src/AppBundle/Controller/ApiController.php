@@ -2,37 +2,12 @@
 
 namespace AppBundle\Controller;
 
-use AppBundle\Entity\User;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
 class ApiController extends Controller
 {
-    private function checkIfExist($userName)
-    {
-        $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository("AppBundle:User")->findOneBy(array("uid" => $userName));
-
-        if (!$user) {
-            $user = new User();
-            $user->setUid($userName);
-
-            $em->persist($user);
-            $em->flush();
-        }
-
-        return $user;
-    }
-
-    private function getLdapUser($userName)
-    {
-        $ldapService = $this->get("ldap.service");
-        $ldapUser = $ldapService->getUser($userName);
-        
-        return $ldapService->transformToUser($ldapUser);
-    }
-
     /**
      * @Route("/~vrasquie/cas/api/service/call/{id}", name="api_service")
      */
@@ -41,13 +16,13 @@ class ApiController extends Controller
         $casUser = $this->getUser();
         $callback = $request->query->get("callback");
         $responseService = $this->get("response.service");
+        $userService = $this->get("user.service");
 
         if (!$casUser) {
             return $responseService->sendError(1, "Not connected", $callback);
         }
-        
-        $casUser = $casUser->getUsername();
-        $this->checkIfExist($casUser);
+
+        $user = $userService->getUserByUid($casUser->getUsername());
 
         $em = $this->getDoctrine()->getManager();
         $service = $em->getRepository("AppBundle:Service")->find($id);
@@ -62,11 +37,9 @@ class ApiController extends Controller
             return $responseService->sendError(3, "Unallowed service", $callback);
         }
 
-        $user = $this->getLdapUser($casUser);
-
         try {
-            $askService = $this->get("ask.service");
-            $response = $askService->ask($service, $user);
+            $serviceService = $this->get("service.service");
+            $response = $serviceService->ask($service, $user);
         } catch (\Exception $e) {
             return $responseService->sendError(4, "Service error", $callback);
         }
@@ -82,26 +55,22 @@ class ApiController extends Controller
         $casUser = $this->getUser();
         $callback = $request->query->get("callback");
         $responseService = $this->get("response.service");
+        $userService = $this->get("user.service");
 
         if (!$casUser) {
             return $responseService->sendError(1, "Not connected", $callback);
         }
 
-        $casUser = $casUser->getUsername();
-        $this->checkIfExist($casUser);
-        
-        $user = $this->getLdapUser($casUser);
+        $user = $userService->getUserByUid($casUser->getUsername());
 
         return $responseService->sendSuccess($user->toArray(), $callback);
     }
-
-    /**
-     * @Route("/~vrasquie/cas/api/service/allow/{id}", name="api_allow")
-     */
+    
     private function allowAction(Request $request, $id)
     {
         $casUser = $this->getUser();
         $responseService = $this->get("response.service");
+        $userService = $this->get("user.service");
 
         if (!$casUser) {
             return $responseService->sendError(1, "Not connected");
@@ -114,11 +83,9 @@ class ApiController extends Controller
             return $responseService->sendError(2, "Nonexistent service");
         }
 
-        $casUser = $casUser->getUsername();
-        $user = $this->checkIfExist($casUser);
-        $user->addService($service);
-        $em->flush();
+        $user = $userService->getUserByUid($casUser->getUsername());
+        $this->get("service.service")->allow($service, $user);
 
-        $responseService->sendSuccess("Done");
+        return $responseService->sendSuccess("Done");
     }
 }

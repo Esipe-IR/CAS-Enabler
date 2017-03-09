@@ -2,21 +2,17 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\User;
-
 class LdapService
 {
     private $host;
     private $env;
-    private $classMapping;
     private $fakeUser;
     private $ds;
 
-    public function __construct($host, $env, array $classMapping, array $fakeUser)
+    public function __construct($host, $env, array $fakeUser)
     {
         $this->host = $host;
         $this->env = $env;
-        $this->classMapping = $classMapping;
         $this->fakeUser = $fakeUser;
         $this->ds = null;
     }
@@ -47,32 +43,37 @@ class LdapService
 
         return $ldapResult[0];
     }
-
-    public function homeDirToClass($homeDir)
+    
+    public function isValid(array $ldapUser)
     {
-        $arr = explode("/", $homeDir);
-        $class = $arr[2];
-
-        if (isset($this->classMapping[$class])) {
-            $class = $this->classMapping[$class];
+        if (!isset($ldapUser["givenname"]) || !isset($ldapUser["givenname"][0])) {
+            return false;
+        }
+        
+        if (!isset($ldapUser["sn"]) || !isset($ldapUser["sn"][0])) {
+            return false;
+        }
+        
+        if (!isset($ldapUser["uid"]) || !isset($ldapUser["uid"][0])) {
+            return false;
         }
 
-        return $class;
-    }
+        if (!isset($ldapUser["mail"]) || !isset($ldapUser["mail"][0])) {
+            return false;
+        }
 
-    public function transformToUser($ldapUser)
-    {
-        $class = $this->homeDirToClass($ldapUser["homedirectory"][0]);
+        if (!isset($ldapUser["supannetuid"]) || !isset($ldapUser["supannetuid"][0])) {
+            return false;
+        }
 
-        $user = new User();
-        $user->setName($ldapUser["givenname"][0]);
-        $user->setLastname($ldapUser["sn"][0]);
-        $user->setUid($ldapUser["uid"][0]);
-        $user->setEmail($ldapUser["mail"][0]);
-        $user->setEtuId((int) $ldapUser["supannetuid"][0]);
-        $user->setClass($class);
-        $user->setStatus((bool) $ldapUser["accountstatus"][0]);
+        if (!isset($ldapUser["homedirectory"]) || !isset($ldapUser["homedirectory"][0])) {
+            return false;
+        }
 
-        return $user;
+        if (!isset($ldapUser["accountstatus"]) || !isset($ldapUser["accountstatus"][0])) {
+            return false;
+        }
+        
+        return true;
     }
 }
