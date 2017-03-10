@@ -46,7 +46,7 @@ class UserService
 
     public function getLdapUser(User $user)
     {
-        $ldapUser = $this->ldapService->getUser($user);
+        $ldapUser = $this->ldapService->getUser($user->getUid());
 
         if ($this->ldapService->isValid($ldapUser)) {
             $user->setName($ldapUser["givenname"][0]);
