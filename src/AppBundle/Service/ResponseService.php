@@ -9,7 +9,7 @@ class ResponseService
     public function sendError($code, $msg, $callback = null)
     {
         $response = new JsonResponse();
-        $response->setStatusCode(400);
+        $response->setStatusCode(200);
         $response->setData(array(
             'status' => false,
             'code' => $code,
