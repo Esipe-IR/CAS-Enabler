@@ -23,8 +23,8 @@ parameters:
 
   cas_enabler_auth:
       username_attribute: user
-      query_service_parameter: ticket
-      query_ticket_parameter: service
+      query_service_parameter: service
+      query_ticket_parameter: ticket
       options:
           env: "%kernel.environment%"
           default_user: "%fake_user%"
