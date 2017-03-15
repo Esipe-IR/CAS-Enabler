@@ -19,38 +19,46 @@ CAS Enabler  is a fast and convenient way for people to log into your app across
 
 ## API
 
-### Allow Service
-`/service/{uid}`
-
-Where "{uid}" is the uid of your service.
-Enable an user to allow your service
-
 ### Auth
 `/auth`
 
 Force authentication.
 
+### Register Service
+`/service/register`
+
+Register a service.
+
+Content-Type : HTML
+
+### Allow Service
+`/service/{uid}/allow`
+
+Where "{uid}" is the uid of your service.
+Enable an user to allow your service.
+
+Content-Type: HTML
+
 ### Call Service
-`/api/service/call/{uid}`
+`/api/service/{uid}/call`
 
 Where "{uid}" is the uid of your service. Call your service with user info if the user has enable your service.
 
 You can add a parameter "callback" in order to enable JSONP strategy.
 
+Content-Type: JSON
+
 Ex:
-/api/service/call/SOME-UID?callback=callback
+`/api/service/call/SOME-UID?callback=callback`
 
 Result:
 
-    - Call your service with `user` parameter in JSON.
-    - Put result of your service in `data` key
-
-`
+```jsonp
 callback({
     "status": true,
     "code": 0,
     "data": {"MyService": "MyValue"},
     "error": null
 });
-`
+```
 
