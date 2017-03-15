@@ -27,6 +27,17 @@ class MainController extends Controller
     }
 
     /**
+     * @Route("/~vrasquie/cas/auth", name="auth")
+     */
+    public function authAction(Request $request)
+    {
+        return $this->redirectToRoute("api_service", array(
+            "callback" => $request->query->get("callback"),
+            "uid" => $request->query->get("uid")
+        ));
+    }
+
+    /**
      * @Route("/~vrasquie/cas/flush", name="flush")
      */
     public function flushAction(Request $request)
