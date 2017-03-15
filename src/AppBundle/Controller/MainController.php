@@ -31,10 +31,7 @@ class MainController extends Controller
      */
     public function authAction(Request $request)
     {
-        return $this->redirectToRoute("api_service", array(
-            "callback" => $request->query->get("callback"),
-            "uid" => $request->query->get("uid")
-        ));
+        return new Response("Connected");
     }
 
     /**

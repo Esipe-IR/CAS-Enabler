@@ -44,6 +44,7 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         if ($request->get($this->query_ticket_parameter)) {
+            // Validate ticket
             $url = $this->server_validation_url.'?'.$this->query_ticket_parameter.'='.
                 $request->get($this->query_ticket_parameter).'&'.
                 $this->query_service_parameter.'='.urlencode($this->removeCasTicket($request->getUri()));
@@ -77,9 +78,9 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
     {
         if (isset($credentials[$this->username_attribute])) {
             return $userProvider->loadUserByUsername($credentials[$this->username_attribute]);
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     /**
@@ -102,11 +103,13 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
+        // If authentication was successful, redirect to the current URI with
+        // the ticket parameter removed so that it is hidden from end-users.
         if ($request->query->has($this->query_ticket_parameter)) {
             return new RedirectResponse($this->removeCasTicket($request->getUri()));
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     /**
@@ -146,25 +149,25 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
      */
     protected function removeCasTicket($uri) {
         $parsed_url = parse_url($uri);
-
+        // If there are no query parameters, then there is nothing to do.
         if (empty($parsed_url['query'])) {
             return $uri;
         }
-
         parse_str($parsed_url['query'], $query_params);
-
+        // If there is no 'ticket' parameter, there is nothing to do.
         if (!isset($query_params[$this->query_ticket_parameter])) {
             return $uri;
         }
-
+        // Remove the ticket parameter and rebuild the query string.
         unset($query_params[$this->query_ticket_parameter]);
-
         if (empty($query_params)) {
             unset($parsed_url['query']);
         } else {
             $parsed_url['query'] = http_build_query($query_params);
         }
 
+        // Rebuild the URI from the parsed components.
+        // Source: https://secure.php.net/manual/en/function.parse-url.php#106731
         $scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
         $host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
         $port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
@@ -174,7 +177,6 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
         $path     = isset($parsed_url['path']) ? $parsed_url['path'] : '';
         $query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
         $fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
-
         return "$scheme$user$pass$host$port$path$query$fragment";
     }
 }
