@@ -13,8 +13,8 @@ class ServiceRepository extends \Doctrine\ORM\EntityRepository
     public function isAllow($service, $uid)
     {
         return $this->createQueryBuilder('s')
-        ->innerJoin('s.users', 'u')
-        ->where('u.uid = :user')
+        ->innerJoin("s.users", "u")
+        ->where('u.id = :user')
         ->andWhere('s.id = :service')
         ->setParameter('user', $uid)
         ->setParameter("service", $service)

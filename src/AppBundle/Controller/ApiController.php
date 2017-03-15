@@ -31,7 +31,7 @@ class ApiController extends Controller
             return $responseService->sendError(2, "Nonexistent service", $callback);
         }
 
-        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $casUser);
+        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $user->getId());
 
         if (!$isAllow) {
             return $responseService->sendError(3, "Unallowed service", $callback);
