@@ -36,6 +36,14 @@ class MainController extends Controller
     }
 
     /**
+     * @Route("/~vrasquie/cas/service/register", name="service_register")
+     */
+    public function registerAction(Request $request)
+    {
+        return new Response();
+    }
+
+    /**
      * @Route("/~vrasquie/cas/service/{uid}/allow", name="service_allow")
      */
     public function allowAction(Request $request, $uid)
@@ -76,7 +84,7 @@ class MainController extends Controller
     /**
      * @Route("/~vrasquie/cas/service/{uid}/call", name="service_call")
      */
-    public function serviceAction(Request $request, $uid)
+    public function callAction(Request $request, $uid)
     {
         $casUser = $this->getUser();
         $callback = $request->query->get("callback");
@@ -110,6 +118,25 @@ class MainController extends Controller
         }
 
         return $responseService->sendSuccess($response, $callback);
+    }
+
+    /**
+     * @Route("/~vrasquie/cas/api/user/info", name="api_user")
+     */
+    public function userAction(Request $request)
+    {
+        $casUser = $this->getUser();
+        $callback = $request->query->get("callback");
+        $responseService = $this->get("response.service");
+        $userService = $this->get("user.service");
+
+        if (!$casUser) {
+            return $responseService->sendError(1, "Not connected", $callback);
+        }
+
+        $user = $userService->getUserByUid($casUser->getUsername());
+
+        return $responseService->sendSuccess("debug", $callback);
     }
 
     /**
