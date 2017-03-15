@@ -36,7 +36,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/service/{uid}")
+     * @Route("/~vrasquie/cas/service/{uid}/allow", name="service_allow")
      */
     public function allowAction(Request $request, $uid)
     {
@@ -71,6 +71,45 @@ class MainController extends Controller
         return $this->render('default/allow.html.twig', array(
             "service" => $service
         ));
+    }
+
+    /**
+     * @Route("/~vrasquie/cas/service/{uid}/call", name="service_call")
+     */
+    public function serviceAction(Request $request, $uid)
+    {
+        $casUser = $this->getUser();
+        $callback = $request->query->get("callback");
+        $responseService = $this->get("response.service");
+        $userService = $this->get("user.service");
+
+        if (!$casUser) {
+            return $responseService->sendError(1, "Not connected", $callback);
+        }
+
+        $user = $userService->getUserByUid($casUser->getUsername());
+
+        $em = $this->getDoctrine()->getManager();
+        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
+
+        if (!$service) {
+            return $responseService->sendError(2, "Nonexistent service", $callback);
+        }
+
+        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $user->getId());
+
+        if (!$isAllow) {
+            return $responseService->sendError(3, "Unallowed service", $callback);
+        }
+
+        try {
+            $serviceService = $this->get("service.service");
+            $response = $serviceService->ask($service, $user);
+        } catch (\Exception $e) {
+            return $responseService->sendError(4, "Service error", $callback);
+        }
+
+        return $responseService->sendSuccess($response, $callback);
     }
 
     /**
