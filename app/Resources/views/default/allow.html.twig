@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div>
+        <h1>Allow Service</h1>
+
+        <p>You will allow a service for your account. Please be careful</p>
+
+        <h2>{{ service.name }}</h2>
+        <p>{{ service.description }}</p>
+
+        <a href="{{ service.url }}">{{ service.name }}</a>
+
+        <form method="post">
+            <input type="submit" name="enable" value="Enable">
+        </form>
+    </div>
+{% endblock %}

@@ -63,29 +63,6 @@ class ApiController extends Controller
 
         $user = $userService->getUserByUid($casUser->getUsername());
 
-        return $responseService->sendSuccess($user->toArray(), $callback);
-    }
-    
-    private function allowAction(Request $request, $id)
-    {
-        $casUser = $this->getUser();
-        $responseService = $this->get("response.service");
-        $userService = $this->get("user.service");
-
-        if (!$casUser) {
-            return $responseService->sendError(1, "Not connected");
-        }
-
-        $em = $this->getDoctrine()->getManager();
-        $service = $em->getRepository("AppBundle:Service")->find($id);
-
-        if (!$service) {
-            return $responseService->sendError(2, "Nonexistent service");
-        }
-
-        $user = $userService->getUserByUid($casUser->getUsername());
-        $this->get("service.service")->allow($service, $user);
-
-        return $responseService->sendSuccess("Done");
+        return $responseService->sendSuccess("debug", $callback);
     }
 }

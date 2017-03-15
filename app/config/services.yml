@@ -50,7 +50,6 @@ services:
 
   service.service:
       class: AppBundle\Service\ServiceService
-      arguments: ["@doctrine.orm.entity_manager"]
 
   cas.enabler.authenticator:
       class: AppBundle\Security\CasEnablerAuthenticator
