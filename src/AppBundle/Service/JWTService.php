@@ -2,8 +2,9 @@
 
 namespace AppBundle\Service;
 
+use AppBundle\Entity\Service;
 use AppBundle\Entity\User;
-use Namshi\JOSE\SimpleJWS;
+use \Firebase\JWT\JWT;
 
 /**
  * Class JWTService
@@ -14,6 +15,8 @@ class JWTService
     private $sslPrivateKeyPath;
     private $sslPrivateKeyPassPhrase;
     private $sslPublicKeyPath;
+    private $kernelRootDir;
+    private $host;
 
     /**
      * JWTService constructor.
@@ -21,33 +24,41 @@ class JWTService
      * @param $privateKeyPassPhrase
      * @param $publicKeyPath
      */
-    public function __construct($privateKeyPath, $privateKeyPassPhrase, $publicKeyPath)
-    {
+    public function __construct(
+        $privateKeyPath,
+        $privateKeyPassPhrase,
+        $publicKeyPath,
+        $kernelRootDir,
+        $host
+    ) {
         $this->sslPrivateKeyPath = $privateKeyPath;
         $this->sslPrivateKeyPassPhrase = $privateKeyPassPhrase;
         $this->sslPublicKeyPath = $publicKeyPath;
+        $this->kernelRootDir = $kernelRootDir;
+        $this->host = $host;
     }
 
     /**
      * @param User $user
+     * @param Service $service
      * @return string
      */
-    public function generate(User $user)
+    public function generate(User $user, Service $service)
     {
-        $date = new \DateTime('tomorrow');
-        $payload = array(
-            "usr" => json_encode($user->toArray()),
-            "exp" => $date->format('U'),
+        $token = array(
+            "iss" => $this->host,
+            "aud" => $service->getUid(),
+            "iat" => time(),
+            "nbf" => time() + 1,
+            "exp" => time() + 1000,
+            "usr" => json_encode($user->toArray())
         );
+        
+        $path = $this->kernelRootDir . $this->sslPrivateKeyPath;
+        $key = file_get_contents($path);
+        $privateKey = openssl_pkey_get_private($key, $this->sslPrivateKeyPassPhrase);
 
-        $jws  = new SimpleJWS(array(
-            'alg' => 'RS256'
-        ));
-        $jws->setPayload($payload);
-        $privateKey = openssl_pkey_get_private($this->sslPrivateKeyPath, $this->sslPrivateKeyPassPhrase);
-        $jws->sign($privateKey);
-
-        return $jws->getTokenString();
+        return JWT::encode($token, $privateKey, 'RS256');
     }
 
     /**
@@ -56,15 +67,16 @@ class JWTService
      */
     public function verify($token)
     {
-        $jws = SimpleJWS::load($token);
-        $public_key = openssl_pkey_get_public($this->sslPublicKeyPath);
+        $path = $this->kernelRootDir . $this->sslPublicKeyPath;
+        $key = file_get_contents($path);
+        $publicKey = openssl_pkey_get_public($key);
 
-        if ($jws->verify($public_key, 'RS256')) {
-            $payload = $jws->getPayload();
-            
-            return $payload["usr"];
+        try {
+            $decoded = JWT::decode($token, $publicKey, array('RS256'));
+        } catch (\Exception $e) {
+            return null;
         }
-        
-        return null;
+
+        return $decoded;
     }
 }

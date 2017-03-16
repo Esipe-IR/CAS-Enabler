@@ -1,5 +1,6 @@
 parameters:
   ldap_host: ldap://vmldapetud1.u-pem.fr/
+  host: perso-etudiant.u-pem.fr
   base_url: /~vrasquie/cas
 
   class_mapping:
@@ -51,12 +52,9 @@ services:
       class: AppBundle\Service\UserService
       arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%class_mapping%"]
 
-  service.service:
-      class: AppBundle\Service\ServiceService
-
   jwt.service:
       class: AppBundle\Service\JWTService
-      arguments: ["%private.key.path%", "%private.key.passphrase%", "%public.key.path%"]
+      arguments: ["%private.key.path%", "%private.key.passphrase%", "%public.key.path%", "%kernel.root_dir%", "%host%"]
 
   cas.enabler.authenticator:
       class: AppBundle\Security\CasEnablerAuthenticator
