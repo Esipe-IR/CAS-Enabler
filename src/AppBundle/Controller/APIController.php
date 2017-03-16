@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 class APIController extends Controller
 {
     /**
-     * @Route("/api/token", name="token_generate")
+     * @Route("/~vrasquie/cas/api/token", name="token_generate")
      */
     public function tokenGenerateAction(Request $request)
     {
@@ -48,7 +48,7 @@ class APIController extends Controller
     }
 
     /**
-     * @Route("/api/token/{token}", name="token_verify")
+     * @Route("/~vrasquie/cas/api/token/{token}", name="token_verify")
      */
     public function tokenVerifyAction(Request $request, $token)
     {

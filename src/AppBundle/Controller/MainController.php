@@ -28,7 +28,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/auth", name="auth")
+     * @Route("/~vrasquie/cas/auth", name="auth")
      */
     public function authAction(Request $request)
     {
@@ -36,7 +36,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/service/register", name="service_register")
+     * @Route("/~vrasquie/cas/service/register", name="service_register")
      */
     public function registerAction(Request $request)
     {
@@ -44,7 +44,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/service/{uid}/allow", name="service_allow")
+     * @Route("/~vrasquie/cas/service/{uid}/allow", name="service_allow")
      */
     public function allowAction(Request $request, $uid)
     {
@@ -79,18 +79,5 @@ class MainController extends Controller
         return $this->render('default/allow.html.twig', array(
             "service" => $service
         ));
-    }
-    
-    /**
-     * @Route("/flush", name="flush")
-     */
-    public function flushAction(Request $request)
-    {
-        $dir = $this->get("kernel")->getRootDir() . "/../var/cache";
-
-        $flushService = $this->get("flush.service");
-        $flushService->removeDir($dir);
-
-        return new Response("Delete");
     }
 }

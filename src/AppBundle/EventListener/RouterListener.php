@@ -33,9 +33,9 @@ class RouterListener implements EventSubscriberInterface
             return;
         }
 
-        if ($this->env === "prod" && $event->isMasterRequest()) {
+        if ($this->env === "dev" && $event->isMasterRequest()) {
             $r = $event->getRequest();
-            $uri = str_replace($this->baseUrl, "", $r->server->get("REQUEST_URI"));
+            $uri = $this->baseUrl . $r->server->get("REQUEST_URI");
             $r->server->set("REQUEST_URI", $uri);
 
             $r->initialize($r->query->all(), $r->request->all(), $r->attributes->all(), $r->cookies->all(), $r->files->all(), $r->server->all(), $r->getContent());

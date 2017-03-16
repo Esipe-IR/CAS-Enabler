@@ -32,6 +32,8 @@ parameters:
       options:
           env: "%kernel.environment%"
           default_user: "%fake_user%"
+          host: "%host%"
+          base_url: "%base_url%"
       server_login_url: https://cas.u-pem.fr/login
       server_validation_url: https://cas.u-pem.fr/serviceValidate
       server_logout_url: https://cas.u-pem.fr/logout
@@ -44,9 +46,6 @@ services:
   
   response.service:
       class: AppBundle\Service\ResponseService
-
-  flush.service:
-      class: AppBundle\Service\FlushService
 
   user.service:
       class: AppBundle\Service\UserService
