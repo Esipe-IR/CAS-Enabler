@@ -26,7 +26,7 @@ class APIController extends Controller
         }
 
         $user = $userService->getUserByUid($casUser->getUsername());
-        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $request->getHttpHost()));
+        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $request->getClientIp()));
 
         if (!$service) {
             return $responseService->sendError(2, "Nonexistent service", $callback);
