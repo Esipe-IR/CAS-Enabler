@@ -1,19 +1,15 @@
 CAS Enabler
 ===========
 
-CAS Enabler  is a fast and convenient way for people to log into your app across multiple platforms with their UPEM account.
+CAS Enabler is a fast and convenient way for people to log into your app across multiple platforms with their UPEM account.
+
+API IS IN PROGRESS ... Breaking changes may follow
 
 ## Use
 
     - Register a Service at this URL :
     - Install Client SDK
     - Enjoy
-
-## Prerequist
-
-    - Registered service
-    - Service allow by the user
-    - Valid service URL & valid service return type (JSON)
 
 ## Client SDK
 
@@ -26,41 +22,17 @@ Force authentication.
 
 Content-Type: HTML
 
-### Register Service
-`/service/register`
+### Generate token
+`/api/token`
 
-Register a service.
+Generate a Json Web Token with user information in it if :
 
-Content-Type : HTML
+    - User is logged in
+    - Service exist
+    - Service is allowed by user
 
-### Allow Service
-`/service/{uid}/allow`
+### Verify token
+`/api/token/{token}`
 
-Where "{uid}" is the uid of your service.
-Enable an user to allow your service.
-
-Content-Type: HTML
-
-### Call Service
-`/service/{uid}/call`
-
-Where "{uid}" is the uid of your service. Call your service with user info if the user has enable your service.
-
-You can add a parameter "callback" in order to enable JSONP strategy.
-
-Content-Type: JSON
-
-Ex:
-`/service/SOME-UID/call?callback=callback`
-
-Result:
-
-```jsonp
-callback({
-    "status": true,
-    "code": 0,
-    "data": {"MyService": "MyValue"},
-    "error": null
-});
-```
+Decrypt a Json Web Token and return plain decoded object
 
