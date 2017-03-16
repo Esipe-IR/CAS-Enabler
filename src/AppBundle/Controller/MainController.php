@@ -100,7 +100,7 @@ class MainController extends Controller
         $user = $userService->getUserByUid($casUser->getUsername());
         
         //TODO: Check service;
-        dump($request);die;
+        var_dump($user->toArray());die;
         
         $token = $jwtService->generate($user);
         

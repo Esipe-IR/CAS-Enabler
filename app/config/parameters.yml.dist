@@ -5,8 +5,7 @@ parameters:
     database_name: login_db
     database_user: login
     database_password: pass
-    secret: SECRET
-    ldap_host: 'ldap://ldap.host.fr'
+    secret: ~
     private.key.path: ~
     private.key.passphrase: ~
     public.key.path: ~

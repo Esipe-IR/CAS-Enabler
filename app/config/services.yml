@@ -1,6 +1,6 @@
 parameters:
-  host: perso-etudiant.u-pem.fr
-  base_url: /~vrasquier/cas
+  ldap_host: ldap://vmldapetud1.u-pem.fr/
+  base_url: /~vrasquie/cas
 
   class_mapping:
       6ir1: Esipe/Informatique et Réseaux 1
@@ -64,6 +64,6 @@ services:
 
   router.listener:
       class: AppBundle\EventListener\RouterListener
-      arguments: ["%host%", "%base_url%", "%kernel.environment%", "@router.request_context"]
+      arguments: ["%base_url%", "%kernel.environment%"]
       tags:
           - { name: kernel.event_subscriber }

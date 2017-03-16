@@ -13,52 +13,39 @@ use Symfony\Component\Routing\RequestContext;
  */
 class RouterListener implements EventSubscriberInterface
 {
-    private $host;
     private $baseUrl;
     private $env;
-    private $context;
 
     /**
      * RouterListener constructor.
-     * @param $host
      * @param $baseUrl
      * @param $env
-     * @param RequestContext $context
      */
-    public function __construct(
-        $host,
-        $baseUrl,
-        $env,
-        RequestContext $context
-    ) {
-        $this->host = $host;
+    public function __construct($baseUrl, $env) {
         $this->baseUrl = $baseUrl;
         $this->env = $env;
-        $this->context = $context;
     }
 
-    /**
-     * @param GetResponseEvent $event
-     */
     public function onKernelRequest(GetResponseEvent $event)
     {
+        // https://github.com/symfony/symfony/issues/21480
         if (preg_match('/_profiler|_wdt/i', $event->getRequest()->getRequestUri())) {
             return;
         }
 
         if ($this->env === "prod" && $event->isMasterRequest()) {
-            $this->context->setHost($this->host);
-            $this->context->setBaseUrl($this->baseUrl);
+            $r = $event->getRequest();
+            $uri = str_replace($this->baseUrl, "", $r->server->get("REQUEST_URI"));
+            $r->server->set("REQUEST_URI", $uri);
+
+            $r->initialize($r->query->all(), $r->request->all(), $r->attributes->all(), $r->cookies->all(), $r->files->all(), $r->server->all(), $r->getContent());
         }
     }
 
-    /**
-     * @return array
-     */
     public static function getSubscribedEvents()
     {
         return array(
-            KernelEvents::REQUEST => array(array('onKernelRequest', 31)),
+            KernelEvents::REQUEST => array(array('onKernelRequest', 33)),
         );
     }
 }
