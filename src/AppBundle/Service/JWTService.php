@@ -12,29 +12,21 @@ use \Firebase\JWT\JWT;
  */
 class JWTService
 {
-    private $sslPrivateKeyPath;
-    private $sslPrivateKeyPassPhrase;
-    private $sslPublicKeyPath;
-    private $kernelRootDir;
+    private $keysDir;
+    private $passphrase;
     private $host;
 
     /**
      * JWTService constructor.
-     * @param $privateKeyPath
-     * @param $privateKeyPassPhrase
-     * @param $publicKeyPath
+     * @param $kernelDir
+     * @param $keysDir
+     * @param $passphrase
+     * @param $host
      */
-    public function __construct(
-        $privateKeyPath,
-        $privateKeyPassPhrase,
-        $publicKeyPath,
-        $kernelRootDir,
-        $host
-    ) {
-        $this->sslPrivateKeyPath = $privateKeyPath;
-        $this->sslPrivateKeyPassPhrase = $privateKeyPassPhrase;
-        $this->sslPublicKeyPath = $publicKeyPath;
-        $this->kernelRootDir = $kernelRootDir;
+    public function __construct($kernelDir, $keysDir, $passphrase, $host)
+    {
+        $this->keysDir = $kernelDir . $keysDir;
+        $this->passphrase = $passphrase;
         $this->host = $host;
     }
 
@@ -54,9 +46,8 @@ class JWTService
             "usr" => json_encode($user->toArray())
         );
         
-        $path = $this->kernelRootDir . $this->sslPrivateKeyPath;
-        $key = file_get_contents($path);
-        $privateKey = openssl_pkey_get_private($key, $this->sslPrivateKeyPassPhrase);
+        $key = file_get_contents($this->keysDir . $service->getUid() . ".key");
+        $privateKey = openssl_pkey_get_private($key, $this->passphrase);
 
         return JWT::encode($token, $privateKey, 'RS256');
     }
@@ -65,10 +56,9 @@ class JWTService
      * @param $token
      * @return string||null
      */
-    public function verify($token)
+    public function verify(Service $service, $token)
     {
-        $path = $this->kernelRootDir . $this->sslPublicKeyPath;
-        $key = file_get_contents($path);
+        $key = file_get_contents($this->keysDir . $service->getUid() . ".key.pub");
         $publicKey = openssl_pkey_get_public($key);
 
         try {

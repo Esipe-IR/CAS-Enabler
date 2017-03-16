@@ -17,10 +17,6 @@ class MainController extends Controller
     {
         $em = $this->getDoctrine()->getManager();
         $services = $em->getRepository("AppBundle:Service")->findAll();
-        
-        if ($request->getMethod() === "POST") {
-            
-        }
 
         return $this->render('default/index.html.twig', array(
             "services" => $services

@@ -9,14 +9,12 @@ use Symfony\Component\HttpFoundation\Request;
 class APIController extends Controller
 {
     /**
-     * @Route("/~vrasquie/cas/api/token", name="token_generate")
+     * @Route("/~vrasquie/cas/api/service/{uid}/token", name="service_token")
      */
-    public function tokenGenerateAction(Request $request)
+    public function serviceTokenAction(Request $request, $uid)
     {
         $casUser = $this->getUser();
         $callback = $request->query->get("callback");
-        $em = $this->getDoctrine()->getManager();
-
         $responseService = $this->get("response.service");
         $userService = $this->get("user.service");
         $jwtService = $this->get("jwt.service");
@@ -25,8 +23,9 @@ class APIController extends Controller
             return $responseService->sendError(1, "Not connected", $callback);
         }
 
+        $em = $this->getDoctrine()->getManager();
         $user = $userService->getUserByUid($casUser->getUsername());
-        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $request->getClientIp()));
+        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
 
         if (!$service) {
             return $responseService->sendError(2, "Nonexistent service", $callback);
@@ -48,21 +47,48 @@ class APIController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/token/{token}", name="token_verify")
+     * @Route("/~vrasquie/cas/api/service/{uid}/token/{token}", name="service_verify")
      */
-    public function tokenVerifyAction(Request $request, $token)
+    public function serviceVerifyAction(Request $request, $uid, $token)
     {
         $callback = $request->query->get("callback");
-
         $responseService = $this->get("response.service");
         $jwtService = $this->get("jwt.service");
 
-        $jwt = $jwtService->verify($token);
+        $em = $this->getDoctrine()->getManager();
+        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
+
+        if (!$service) {
+            return $responseService->sendError(2, "Nonexistent service", $callback);
+        }
+
+        $jwt = $jwtService->verify($service, $token);
 
         if (!$jwt) {
             return $responseService->sendError(5, "Not valid token", $callback);
         }
 
         return $responseService->sendSuccess($jwt, $callback);
+    }
+
+    /**
+     * @Route("/~vrasquie/cas/api/service/{uid}/rsa", name="service_rsa")
+     */
+    public function rsaAction(Request $request, $uid)
+    {
+        $callback = $request->query->get("callback");
+        $responseService = $this->get("response.service");
+
+        $em = $this->getDoctrine()->getManager();
+        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
+
+        if (!$service) {
+            return $responseService->sendError(2, "Nonexistent service", $callback);
+        }
+
+        $rsakeyService = $this->get("rsakey.service");
+        $pubKey = $rsakeyService->generate($service);
+
+        return $responseService->sendSuccess($pubKey, $callback);        
     }
 }

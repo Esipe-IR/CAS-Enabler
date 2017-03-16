@@ -2,6 +2,7 @@ parameters:
   ldap_host: ldap://vmldapetud1.u-pem.fr/
   host: perso-etudiant.u-pem.fr
   base_url: /~vrasquie/cas
+  keys.dir: /../var/keys/
 
   class_mapping:
       6ir1: Esipe/Informatique et Réseaux 1
@@ -46,14 +47,18 @@ services:
   
   response.service:
       class: AppBundle\Service\ResponseService
+  
+  rsakey.service:
+      class: AppBundle\Service\RSAKeyService
+      arguments: ["%kernel.root_dir%", "%keys.dir%", "%keys.passphrase%"]
+
+  jwt.service:
+      class: AppBundle\Service\JWTService
+      arguments: ["%kernel.root_dir%", "%keys.dir%", "%keys.passphrase%", "%host%"]
 
   user.service:
       class: AppBundle\Service\UserService
       arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%class_mapping%"]
-
-  jwt.service:
-      class: AppBundle\Service\JWTService
-      arguments: ["%private.key.path%", "%private.key.passphrase%", "%public.key.path%", "%kernel.root_dir%", "%host%"]
 
   cas.enabler.authenticator:
       class: AppBundle\Security\CasEnablerAuthenticator

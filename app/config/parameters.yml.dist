@@ -6,6 +6,4 @@ parameters:
     database_user: login
     database_password: pass
     secret: ~
-    private.key.path: ~
-    private.key.passphrase: ~
-    public.key.path: ~
+    keys.passphrase: ~
