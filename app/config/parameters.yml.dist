@@ -7,3 +7,6 @@ parameters:
     database_password: pass
     secret: SECRET
     ldap_host: 'ldap://ldap.host.fr'
+    private.key.path: ~
+    private.key.passphrase: ~
+    public.key.path: ~

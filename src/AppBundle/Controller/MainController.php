@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 class MainController extends Controller
 {
     /**
-     * @Route("/~vrasquie/cas/", name="home")
+     * @Route("/", name="home")
      */
     public function indexAction(Request $request)
     {
@@ -28,7 +28,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/auth", name="auth")
+     * @Route("/auth", name="auth")
      */
     public function authAction(Request $request)
     {
@@ -36,7 +36,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/service/register", name="service_register")
+     * @Route("/service/register", name="service_register")
      */
     public function registerAction(Request $request)
     {
@@ -44,7 +44,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/service/{uid}/allow", name="service_allow")
+     * @Route("/service/{uid}/allow", name="service_allow")
      */
     public function allowAction(Request $request, $uid)
     {
@@ -82,7 +82,52 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/service/{uid}/call", name="service_call")
+     * @Route("/api/token", name="token_generate")
+     */
+    public function tokenGenerateAction(Request $request)
+    {
+        $casUser = $this->getUser();
+        $callback = $request->query->get("callback");
+        
+        $responseService = $this->get("response.service");
+        $userService = $this->get("user.service");
+        $jwtService = $this->get("jwt.service");
+
+        if (!$casUser) {
+            return $responseService->sendError(1, "Not connected", $callback);
+        }
+
+        $user = $userService->getUserByUid($casUser->getUsername());
+        
+        //TODO: Check service;
+        dump($request);die;
+        
+        $token = $jwtService->generate($user);
+        
+        return $responseService->sendSuccess($token, $callback);
+    }
+
+    /**
+     * @Route("/api/token/{token}", name="token_verify")
+     */
+    public function tokenVerifyAction(Request $request, $token)
+    {
+        $callback = $request->query->get("callback");
+        
+        $responseService = $this->get("response.service");
+        $jwtService = $this->get("jwt.service");
+
+        $user = $jwtService->verify($token);
+
+        if (!$user) {
+            return $responseService->sendError(5, "Not valid token", $callback);
+        }
+        
+        return $responseService->sendSuccess($user, $callback);
+    }
+
+    /**
+     * @Route("/service/{uid}/call", name="service_call")
      */
     public function callAction(Request $request, $uid)
     {
@@ -121,26 +166,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/user/info", name="api_user")
-     */
-    public function userAction(Request $request)
-    {
-        $casUser = $this->getUser();
-        $callback = $request->query->get("callback");
-        $responseService = $this->get("response.service");
-        $userService = $this->get("user.service");
-
-        if (!$casUser) {
-            return $responseService->sendError(1, "Not connected", $callback);
-        }
-
-        $user = $userService->getUserByUid($casUser->getUsername());
-
-        return $responseService->sendSuccess("debug", $callback);
-    }
-
-    /**
-     * @Route("/~vrasquie/cas/flush", name="flush")
+     * @Route("/flush", name="flush")
      */
     public function flushAction(Request $request)
     {

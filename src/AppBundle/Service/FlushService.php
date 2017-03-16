@@ -2,8 +2,15 @@
 
 namespace AppBundle\Service;
 
+/**
+ * Class FlushService
+ * @package AppBundle\Service
+ */
 class FlushService
 {
+    /**
+     * @param $dir
+     */
     public function removeDir($dir)
     {
         $objects = scandir($dir); 

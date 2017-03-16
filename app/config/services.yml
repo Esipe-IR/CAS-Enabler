@@ -1,4 +1,7 @@
 parameters:
+  host: perso-etudiant.u-pem.fr
+  base_url: /~vrasquier/cas
+
   class_mapping:
       6ir1: Esipe/Informatique et Réseaux 1
 
@@ -51,6 +54,16 @@ services:
   service.service:
       class: AppBundle\Service\ServiceService
 
+  jwt.service:
+      class: AppBundle\Service\JWTService
+      arguments: ["%private.key.path%", "%private.key.passphrase%", "%public.key.path%"]
+
   cas.enabler.authenticator:
       class: AppBundle\Security\CasEnablerAuthenticator
       arguments: ["%cas_enabler_auth%"]
+
+  router.listener:
+      class: AppBundle\EventListener\RouterListener
+      arguments: ["%host%", "%base_url%", "%kernel.environment%", "@router.request_context"]
+      tags:
+          - { name: kernel.event_subscriber }

@@ -1,6 +1,7 @@
 <?php
 
 namespace AppBundle\Repository;
+use AppBundle\Entity\Service;
 
 /**
  * ServiceRepository
@@ -10,6 +11,12 @@ namespace AppBundle\Repository;
  */
 class ServiceRepository extends \Doctrine\ORM\EntityRepository
 {
+    /**
+     * @param $service
+     * @param $uid
+     * @return Service||null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function isAllow($service, $uid)
     {
         return $this->createQueryBuilder('s')

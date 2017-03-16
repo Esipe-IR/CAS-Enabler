@@ -12,6 +12,10 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
+/**
+ * Class CasEnablerAuthenticator
+ * @package AppBundle\Security
+ */
 class CasEnablerAuthenticator extends AbstractGuardAuthenticator
 {
     protected $server_login_url;
@@ -151,6 +155,7 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
         if (empty($parsed_url['query'])) {
             return $uri;
         }
+        
         parse_str($parsed_url['query'], $query_params);
 
         if (!isset($query_params[$this->query_ticket_parameter])) {
@@ -158,6 +163,7 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
         }
 
         unset($query_params[$this->query_ticket_parameter]);
+        
         if (empty($query_params)) {
             unset($parsed_url['query']);
         } else {

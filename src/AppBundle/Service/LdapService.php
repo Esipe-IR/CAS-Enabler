@@ -2,6 +2,10 @@
 
 namespace AppBundle\Service;
 
+/**
+ * Class LdapService
+ * @package AppBundle\Service
+ */
 class LdapService
 {
     private $host;
@@ -9,6 +13,12 @@ class LdapService
     private $fakeUser;
     private $ds;
 
+    /**
+     * LdapService constructor.
+     * @param $host
+     * @param $env
+     * @param array $fakeUser
+     */
     public function __construct($host, $env, array $fakeUser)
     {
         $this->host = $host;
@@ -16,13 +26,17 @@ class LdapService
         $this->fakeUser = $fakeUser;
         $this->ds = null;
     }
-
+    
     public function connect()
     {
         $this->ds = ldap_connect($this->host);
         ldap_bind($this->ds);
     }
 
+    /**
+     * @param $uid
+     * @return array|null
+     */
     public function getUser($uid)
     {
         if ($this->env !== "prod") {
@@ -43,7 +57,11 @@ class LdapService
 
         return $ldapResult[0];
     }
-    
+
+    /**
+     * @param array $ldapUser
+     * @return bool
+     */
     public function isValid(array $ldapUser)
     {
         if (!isset($ldapUser["givenname"]) || !isset($ldapUser["givenname"][0])) {

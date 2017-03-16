@@ -5,12 +5,22 @@ namespace AppBundle\Service;
 use AppBundle\Entity\User;
 use Doctrine\ORM\EntityManager;
 
+/**
+ * Class UserService
+ * @package AppBundle\Service
+ */
 class UserService
 {
     private $em;
     private $ldapService;
     private $classMapping;
 
+    /**
+     * UserService constructor.
+     * @param EntityManager $em
+     * @param LdapService $ldapService
+     * @param array $classMapping
+     */
     public function __construct(EntityManager $em, LdapService $ldapService, array $classMapping)
     {
         $this->em = $em;
@@ -18,6 +28,10 @@ class UserService
         $this->classMapping = $classMapping;
     }
 
+    /**
+     * @param $username
+     * @return User|null|object
+     */
     public function checkIfExist($username)
     {
         $user = $this->em->getRepository("AppBundle:User")->findOneBy(array("uid" => $username));
@@ -32,6 +46,10 @@ class UserService
         return $user;
     }
 
+    /**
+     * @param $homeDir
+     * @return string
+     */
     public function homeDirToClass($homeDir)
     {
         $arr = explode("/", $homeDir);
@@ -44,6 +62,10 @@ class UserService
         return $class;
     }
 
+    /**
+     * @param User $user
+     * @return User
+     */
     public function getLdapUser(User $user)
     {
         $ldapUser = $this->ldapService->getUser($user->getUid());
@@ -61,6 +83,10 @@ class UserService
         return $user;
     }
 
+    /**
+     * @param $uid
+     * @return User
+     */
     public function getUserByUid($uid)
     {
         $user = $this->checkIfExist($uid);
