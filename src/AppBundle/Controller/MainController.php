@@ -7,7 +7,6 @@ use AppBundle\Form\ServiceAllowType;
 use AppBundle\Form\ServiceType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -31,6 +30,10 @@ class MainController extends Controller
      */
     public function authAction(Request $request)
     {
+        if ($request->query->get("redirect")) {
+            return $this->redirectToRoute($request->query->get("redirect"), array("uid" => $request->query->get("uid")));
+        }
+
         return new Response("Success! You are now connected. You can close this window.");
     }
 
@@ -42,7 +45,7 @@ class MainController extends Controller
         $casUser = $this->getUser();
 
         if (!$casUser) {
-            return $this->redirectToRoute("auth");
+            return $this->redirectToRoute("auth", array("redirect" => "service_connect", "uid" => $uid));
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -50,7 +53,7 @@ class MainController extends Controller
 
         if (!$service) {
             return $this->render('actions/connect.html.twig', array(
-                "action" => 1
+                "action" => 2
             ));
         }
 
@@ -67,6 +70,9 @@ class MainController extends Controller
         $token = $jwtService->generate($service, $user);
 
         if (!$token) {
+            return $this->render('actions/connect.html.twig', array(
+                "action" => 4
+            ));
         }
 
         return $this->render('actions/connect.html.twig', array(

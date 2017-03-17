@@ -5,24 +5,30 @@
 
 {% block javascripts %}
     <script>
-        {% if action == 1 %}
-            window.close();
-        {% endif %}
-
         var $chan = Channel.build({
             window: window.opener,
             origin: "*",
             scope: "CAS.Scope"
         });
 
-        $chan.call({
-            method: "connect",
-            params: "{{ token }}",
-            success: function(result) {
-                if (result) {
+        {% if action %}
+            $chan.call({
+                method: "error",
+                params: "{{ action }}",
+                success: function (r) {
                     window.close();
                 }
-            }
-        });
+            });
+        {% else %}
+            $chan.call({
+                method: "connect",
+                params: "{{ token }}",
+                success: function(result) {
+                    if (result) {
+                        window.close();
+                    }
+                }
+            });
+        {% endif %}
     </script>
 {% endblock %}
