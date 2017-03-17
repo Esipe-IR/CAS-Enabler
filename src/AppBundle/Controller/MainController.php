@@ -35,6 +35,14 @@ class MainController extends Controller
     }
 
     /**
+     * @Route("/~vrasquie/cas/connect", name="connect")
+     */
+    public function connectAction(Request $request)
+    {
+        return $this->render('actions/connect.html.twig');
+    }
+
+    /**
      * @Route("/~vrasquie/cas/service/create", name="service_create")
      */
     public function createAction(Request $request) {

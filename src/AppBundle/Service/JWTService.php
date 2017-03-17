@@ -34,20 +34,25 @@ class JWTService
      */
     public function generate(Service $service, User $user)
     {
+        $privateKey = $this->rsakeyService->getPrivateKey($service);
+
+        if (!$privateKey) {
+            return null;
+        }
+
+        $usrJson = json_encode($user->toArray());
+        if (!openssl_private_encrypt($usrJson, $usr, $privateKey)) {
+            return false;
+        }
+
         $token = array(
             "iss" => $this->host,
             "aud" => $service->getUid(),
             "iat" => time(),
             "nbf" => time() + 1,
             "exp" => time() + 1000,
-            "usr" => json_encode($user->toArray())
+            "usr" => base64_encode($usr)
         );
-        
-        $privateKey = $this->rsakeyService->getPrivateKey($service);
-
-        if (!$privateKey) {
-            return null;
-        }
 
         try {
             return JWT::encode($token, $privateKey, RSAKeyService::ALG);
