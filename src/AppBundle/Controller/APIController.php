@@ -88,6 +88,10 @@ class APIController extends Controller
 
         $rsakeyService = $this->get("rsakey.service");
         $pubKey = $rsakeyService->generate($service);
+        
+        if (!$pubKey) {
+            return $responseService->sendError(6, "Fatal error public key", $callback);
+        }
 
         return $responseService->sendSuccess($pubKey, $callback);        
     }
