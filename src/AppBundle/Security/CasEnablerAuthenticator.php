@@ -48,7 +48,6 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         if ($request->get($this->query_ticket_parameter)) {
-            // Validate ticket
             $url = $this->server_validation_url.'?'.$this->query_ticket_parameter.'='.
                 $request->get($this->query_ticket_parameter).'&'.
                 $this->query_service_parameter.'='.urlencode($this->removeCasTicket($request->getUri()));

@@ -12,30 +12,27 @@ use \Firebase\JWT\JWT;
  */
 class JWTService
 {
-    private $keysDir;
-    private $passphrase;
+    private $rsakeyService;
     private $host;
 
     /**
      * JWTService constructor.
-     * @param $kernelDir
-     * @param $keysDir
-     * @param $passphrase
-     * @param $host
+     * @param RSAKeyService $rsakeyService
+     * @param string $host
      */
-    public function __construct($kernelDir, $keysDir, $passphrase, $host)
+    public function __construct(RSAKeyService $rsakeyService, $host)
     {
-        $this->keysDir = $kernelDir . $keysDir;
-        $this->passphrase = $passphrase;
+        $this->rsakeyService = $rsakeyService;
         $this->host = $host;
     }
 
     /**
-     * @param User $user
+     * Generate a Json Web Token
      * @param Service $service
+     * @param User $user
      * @return string
      */
-    public function generate(User $user, Service $service)
+    public function generate(Service $service, User $user)
     {
         $token = array(
             "iss" => $this->host,
@@ -46,27 +43,46 @@ class JWTService
             "usr" => json_encode($user->toArray())
         );
         
-        $key = file_get_contents($this->keysDir . $service->getUid() . ".key");
-        $privateKey = openssl_pkey_get_private($key, $this->passphrase);
+        $privateKey = $this->rsakeyService->getPrivateKey($service);
 
-        return JWT::encode($token, $privateKey, 'RS256');
+        return JWT::encode($token, $privateKey, RSAKeyService::ALG);
     }
 
     /**
-     * @param $token
-     * @return string||null
+     * Verify if Json Web Token is valid
+     * @param Service $service
+     * @param string $token
+     * @return bool
      */
     public function verify(Service $service, $token)
     {
-        $key = file_get_contents($this->keysDir . $service->getUid() . ".key.pub");
-        $publicKey = openssl_pkey_get_public($key);
+        $publicKey = $this->rsakeyService->getPublicKey($service);
 
         try {
-            $decoded = JWT::decode($token, $publicKey, array('RS256'));
+            JWT::decode($token, $publicKey, array(RSAKeyService::ALG));
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Decode Json Web Token to plain object
+     * @param Service $service
+     * @param string $token
+     * @return null|object
+     */
+    public function decode(Service $service, $token)
+    {
+        $publicKey = $this->rsakeyService->getPublicKey($service);
+
+        try {
+            $jwt = JWT::decode($token, $publicKey, array(RSAKeyService::ALG));
         } catch (\Exception $e) {
             return null;
         }
 
-        return $decoded;
+        return $jwt;
     }
 }

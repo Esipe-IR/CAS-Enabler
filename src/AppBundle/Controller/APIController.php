@@ -37,7 +37,7 @@ class APIController extends Controller
             return $responseService->sendError(3, "Unallowed service", $callback);
         }
 
-        $token = $jwtService->generate($user, $service);
+        $token = $jwtService->generate($service, $user);
 
         if (!$token) {
             return $responseService->sendError(4, "Fatal error token", $callback);

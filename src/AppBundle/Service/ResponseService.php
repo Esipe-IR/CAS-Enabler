@@ -11,11 +11,11 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class ResponseService
 {
     /**
-     * @param $status
-     * @param $code
-     * @param $data
-     * @param $error
-     * @param null $callback
+     * @param bool $status
+     * @param int $code
+     * @param string $data
+     * @param string $error
+     * @param string|null $callback
      * @return JsonResponse
      * @throws \Exception
      */
@@ -38,9 +38,9 @@ class ResponseService
     }
 
     /**
-     * @param $code
-     * @param $error
-     * @param null $callback
+     * @param int $code
+     * @param string $error
+     * @param string|null $callback
      * @return JsonResponse
      */
     public function sendError($code, $error, $callback = null)
@@ -49,8 +49,8 @@ class ResponseService
     }
 
     /**
-     * @param $data
-     * @param null $callback
+     * @param string $data
+     * @param string|null $callback
      * @return JsonResponse
      */
     public function sendSuccess($data, $callback = null)

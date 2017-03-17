@@ -1,40 +1,39 @@
 parameters:
-  ldap_host: ldap://vmldapetud1.u-pem.fr/
   host: perso-etudiant.u-pem.fr
-  base_url: /~vrasquie/cas
+  host.base_url: /~vrasquie/cas
   keys.dir: /../var/keys/
 
-  class_mapping:
+  ldap.host: ldap://vmldapetud1.u-pem.fr/
+  ldap.fake.user:
+        homedirectory:
+          - /home/6ir1/test
+        givenname:
+          - test
+        sn:
+          - test
+        uid:
+          - test
+        mail:
+          - test@test.fr
+        supannetuid:
+          - 424242
+        accountstatus:
+          - true
+  ldap.class:
       6ir1: Esipe/Informatique et Réseaux 1
 
-  fake_ldap_user:
-      homedirectory:
-        - /home/6ir1/test
-      givenname:
-        - test
-      sn:
-        - test
-      uid:
-        - test
-      mail:
-        - test@test.fr
-      supannetuid:
-        - 424242
-      accountstatus:
-        - true
-
-  fake_user: 
+  cas.fake.user:
       user: test
 
-  cas_enabler_auth:
+  cas.enabler.auth:
       username_attribute: user
       query_service_parameter: service
       query_ticket_parameter: ticket
       options:
           env: "%kernel.environment%"
-          default_user: "%fake_user%"
+          default_user: "%cas.fake.user%"
           host: "%host%"
-          base_url: "%base_url%"
+          base_url: "%host.base_url%"
       server_login_url: https://cas.u-pem.fr/login
       server_validation_url: https://cas.u-pem.fr/serviceValidate
       server_logout_url: https://cas.u-pem.fr/logout
@@ -43,7 +42,7 @@ parameters:
 services:
   ldap.service:
       class: AppBundle\Service\LdapService
-      arguments: ["%ldap_host%", "%kernel.environment%", "%fake_ldap_user%"]
+      arguments: ["%ldap.host%", "%kernel.environment%", "%ldap.fake.user%"]
   
   response.service:
       class: AppBundle\Service\ResponseService
@@ -54,18 +53,18 @@ services:
 
   jwt.service:
       class: AppBundle\Service\JWTService
-      arguments: ["%kernel.root_dir%", "%keys.dir%", "%keys.passphrase%", "%host%"]
+      arguments: ["@rsakey.service", "%host%"]
 
   user.service:
       class: AppBundle\Service\UserService
-      arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%class_mapping%"]
+      arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%ldap.class%"]
 
   cas.enabler.authenticator:
       class: AppBundle\Security\CasEnablerAuthenticator
-      arguments: ["%cas_enabler_auth%"]
+      arguments: ["%cas.enabler.auth%"]
 
   router.listener:
       class: AppBundle\EventListener\RouterListener
-      arguments: ["%base_url%", "%kernel.environment%"]
+      arguments: ["%host.base_url%", "%kernel.environment%"]
       tags:
           - { name: kernel.event_subscriber }

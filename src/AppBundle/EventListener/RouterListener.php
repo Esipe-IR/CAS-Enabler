@@ -26,22 +26,23 @@ class RouterListener implements EventSubscriberInterface
         $this->env = $env;
     }
 
+    /**
+     * @param GetResponseEvent $event
+     */
     public function onKernelRequest(GetResponseEvent $event)
     {
-        // https://github.com/symfony/symfony/issues/21480
-        if (preg_match('/_profiler|_wdt/i', $event->getRequest()->getRequestUri())) {
-            return;
-        }
-
         if ($this->env === "dev" && $event->isMasterRequest()) {
-            $r = $event->getRequest();
-            $uri = $this->baseUrl . $r->server->get("REQUEST_URI");
-            $r->server->set("REQUEST_URI", $uri);
+            //$r = $event->getRequest();
+            //$uri = $this->baseUrl . $r->server->get("REQUEST_URI");
+            //$r->server->set("REQUEST_URI", $uri);
 
-            $r->initialize($r->query->all(), $r->request->all(), $r->attributes->all(), $r->cookies->all(), $r->files->all(), $r->server->all(), $r->getContent());
+            //$r->initialize($r->query->all(), $r->request->all(), $r->attributes->all(), $r->cookies->all(), $r->files->all(), $r->server->all(), $r->getContent());
         }
     }
 
+    /**
+     * @return array
+     */
     public static function getSubscribedEvents()
     {
         return array(
