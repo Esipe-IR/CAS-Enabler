@@ -49,7 +49,7 @@ class JWTService
             "iss" => $this->host,
             "aud" => $service->getUid(),
             "iat" => time(),
-            "nbf" => time() + 1,
+            "nbf" => time(),
             "exp" => time() + 1000,
             "usr" => base64_encode($usr)
         );

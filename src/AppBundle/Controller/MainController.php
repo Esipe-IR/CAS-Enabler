@@ -35,11 +35,44 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/connect", name="connect")
+     * @Route("/~vrasquie/cas/service/{uid}/connect", name="service_connect")
      */
-    public function connectAction(Request $request)
+    public function connectAction(Request $request, $uid)
     {
-        return $this->render('actions/connect.html.twig');
+        $casUser = $this->getUser();
+
+        if (!$casUser) {
+            return $this->redirectToRoute("auth");
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
+
+        if (!$service) {
+            return $this->render('actions/connect.html.twig', array(
+                "action" => 1
+            ));
+        }
+
+        $userService = $this->get("user.service");
+        $user = $userService->getUserByUid($casUser->getUsername());
+
+        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $user->getId());
+
+        if (!$isAllow) {
+            return $this->redirectToRoute("service_allow", array("uid" => $uid));
+        }
+
+        $jwtService = $this->get("jwt.service");
+        $token = $jwtService->generate($service, $user);
+
+        if (!$token) {
+        }
+
+        return $this->render('actions/connect.html.twig', array(
+            "action" => 0,
+            "token" => $token
+        ));
     }
 
     /**
@@ -99,13 +132,10 @@ class MainController extends Controller
     public function allowAction(Request $request, $uid)
     {
         $casUser = $this->getUser();
-        $userService = $this->get("user.service");
 
         if (!$casUser) {
             return $this->redirectToRoute("auth");
         }
-
-        $user = $userService->getUserByUid($casUser->getUsername());
 
         $em = $this->getDoctrine()->getManager();
         $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
@@ -113,6 +143,9 @@ class MainController extends Controller
         if (!$service) {
             return $this->redirectToRoute("home");
         }
+
+        $userService = $this->get("user.service");
+        $user = $userService->getUserByUid($casUser->getUsername());
 
         $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $user->getId());
 
