@@ -55,6 +55,9 @@ services:
       class: AppBundle\Service\JWTService
       arguments: ["@rsakey.service", "%host%"]
 
+  uid.service:
+      class: AppBundle\Service\UIDService
+
   user.service:
       class: AppBundle\Service\UserService
       arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%ldap.class%"]

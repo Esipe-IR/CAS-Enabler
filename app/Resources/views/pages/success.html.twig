@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-sm-12">
+            <p class="text-success">Your service has been created</p>
+
+            <p class="bg-danger">
+                <b>CAUTION !</b> for security concern, those information are
+                for the first and <b>last time</b> delivered to you. <b>THEY WILL NEVER BE PRINT AGAIN !</b>
+            </p>
+
+            {% if publicKey %}
+                <p class="bg-success">
+                    SAVE THIS PUBLIC KEY
+                </p>
+
+                <pre>{{ publicKey }}</pre>
+            {% endif %}
+
+            {% if service.uid %}
+                <p class="bg-success">
+                    SAVE THIS UID
+                </p>
+
+                <pre>{{ service.uid }}</pre>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

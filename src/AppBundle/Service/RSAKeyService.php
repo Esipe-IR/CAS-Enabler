@@ -27,6 +27,19 @@ class RSAKeyService
      * @param Service $service
      * @return bool
      */
+    public function isValid(Service $service)
+    {
+        if ($this->getPublicKey($service)) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * @param Service $service
+     * @return bool
+     */
     public function generate(Service $service)
     {
         $config = array(
