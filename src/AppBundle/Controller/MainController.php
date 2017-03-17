@@ -45,7 +45,10 @@ class MainController extends Controller
         $casUser = $this->getUser();
 
         if (!$casUser) {
-            return $this->redirectToRoute("auth", array("redirect" => "service_connect", "uid" => $uid));
+            return $this->redirectToRoute("auth", array(
+                "uid" => $uid,
+                "redirect" => "service_connect"
+            ));
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -63,7 +66,10 @@ class MainController extends Controller
         $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $user->getId());
 
         if (!$isAllow) {
-            return $this->redirectToRoute("service_allow", array("uid" => $uid));
+            return $this->redirectToRoute("service_allow", array(
+                "uid" => $uid, 
+                "redirect" => "service_connect"
+            ));
         }
 
         $jwtService = $this->get("jwt.service");
@@ -171,7 +177,9 @@ class MainController extends Controller
             $service->addUser($user);
             $em->flush();
             
-            return $this->redirectToRoute("home");
+            return $this->redirectToRoute($request->query->get("redirect"), array(
+                "uid" => $uid
+            ));
         }
         
         return $this->render('pages/allow.html.twig', array(

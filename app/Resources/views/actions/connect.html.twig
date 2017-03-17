@@ -11,24 +11,22 @@
             scope: "CAS.Scope"
         });
 
-        {% if action %}
-            $chan.call({
-                method: "error",
-                params: "{{ action }}",
-                success: function (r) {
+        {% set method = "error" %}
+        {% set params = action %}
+
+        {% if not action %}
+            {% set method = "connect" %}
+            {% set params = token %}
+        {% endif %}
+
+        $chan.call({
+            method: "{{ method }}",
+            params: "{{ params }}",
+            success: function (r) {
+                if (r) {
                     window.close();
                 }
-            });
-        {% else %}
-            $chan.call({
-                method: "connect",
-                params: "{{ token }}",
-                success: function(result) {
-                    if (result) {
-                        window.close();
-                    }
-                }
-            });
-        {% endif %}
+            }
+        });
     </script>
 {% endblock %}
