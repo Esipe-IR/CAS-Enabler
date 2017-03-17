@@ -45,7 +45,6 @@ class MainController extends Controller
             $uidService = $this->get("uid.service");
             $uid = $uidService->generate();
             $service->setUid($uid);
-            var_dump($service);die;
 
             $em = $this->getDoctrine()->getManager();
             $em->persist($service);
