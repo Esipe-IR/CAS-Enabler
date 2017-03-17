@@ -3,36 +3,19 @@ CAS Enabler
 
 CAS Enabler is a fast and convenient way for people to log into your app across multiple platforms with their UPEM account.
 
-API IS IN PROGRESS ... Breaking changes may follow
-
 ## Use
 
-    - Register a Service at this URL :
-    - Install Client SDK
-    - Enjoy
+    - Create a Service : https://perso-etudiant.u-pem.fr/~vrasquie/cas/service/create
+    - Save UID and PUBLIC KEY
+    - Install Client SDK (https://github.com/Esipe-IR/CAS-Enabler-SDK)
+    - Enjoy UPEM connexion
+
+## CAUTION
+
+Never show your service public key ! It is secret !
 
 ## Client SDK
 
-## API
-
-### Auth
-`/auth`
-
-Force authentication.
-
-Content-Type: HTML
-
-### Generate token
-`/api/token`
-
-Generate a Json Web Token with user information in it if :
-
-    - User is logged in
-    - Service exist
-    - Service is allowed by user
-
-### Verify token
-`/api/token/{token}`
-
-Decrypt a Json Web Token and return plain decoded object
+In order to implement UPEM Connexion you can use the CAS Enabler SDK.
+Read more : https://github.com/Esipe-IR/CAS-Enabler-SDK
 
