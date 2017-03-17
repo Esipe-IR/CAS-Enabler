@@ -13,19 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 class MainController extends Controller
 {
     /**
-     * @Route("/", name="home")
-     */
-    public function indexAction(Request $request)
-    {
-        $em = $this->getDoctrine()->getManager();
-        $services = $em->getRepository("AppBundle:Service")->findAll();
-
-        return $this->render('pages/index.html.twig', array(
-            "services" => $services
-        ));
-    }
-
-    /**
      * @Route("/~vrasquie/cas/auth", name="auth")
      */
     public function authAction(Request $request)
@@ -35,6 +22,31 @@ class MainController extends Controller
         }
 
         return new Response("Success! You are now connected. You can close this window.");
+    }
+
+    /**
+     * @Route("/~vrasquie/cas/service/create", name="service_create")
+     */
+    public function createAction(Request $request) {
+        $service = new Service();
+        $form = $this->createForm(ServiceType::class, $service);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $uidService = $this->get("uid.service");
+            $uid = $uidService->generate();
+            $service->setUid($uid);
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($service);
+            $em->flush();
+            
+            return $this->redirectToRoute("service_success", array("uid" => $service->getUid()));
+        }
+
+        return $this->render('pages/create.html.twig', array(
+            "form" => $form->createView()
+        ));
     }
 
     /**
@@ -67,7 +79,7 @@ class MainController extends Controller
 
         if (!$isAllow) {
             return $this->redirectToRoute("service_allow", array(
-                "uid" => $uid, 
+                "uid" => $uid,
                 "redirect" => "service_connect"
             ));
         }
@@ -84,31 +96,6 @@ class MainController extends Controller
         return $this->render('actions/connect.html.twig', array(
             "action" => 0,
             "token" => $token
-        ));
-    }
-
-    /**
-     * @Route("/~vrasquie/cas/service/create", name="service_create")
-     */
-    public function createAction(Request $request) {
-        $service = new Service();
-        $form = $this->createForm(ServiceType::class, $service);
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $uidService = $this->get("uid.service");
-            $uid = $uidService->generate();
-            $service->setUid($uid);
-
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($service);
-            $em->flush();
-            
-            return $this->redirectToRoute("service_success", array("uid" => $service->getUid()));
-        }
-
-        return $this->render('pages/create.html.twig', array(
-            "form" => $form->createView()
         ));
     }
 
@@ -186,5 +173,30 @@ class MainController extends Controller
             "service" => $service,
             "form" => $form->createView()
         ));
+    }
+
+    /**
+     * @Route("/~vrasquie/cas/service/{uid}/token/{token}", name="service_verify")
+     */
+    public function serviceVerifyAction(Request $request, $uid, $token)
+    {
+        $callback = $request->query->get("callback");
+        $responseService = $this->get("response.service");
+        $jwtService = $this->get("jwt.service");
+
+        $em = $this->getDoctrine()->getManager();
+        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
+
+        if (!$service) {
+            return $responseService->sendError(2, "Nonexistent service", $callback);
+        }
+
+        $jwt = $jwtService->verify($service, $token);
+
+        if (!$jwt) {
+            return $responseService->sendError(5, "Not valid token", $callback);
+        }
+
+        return $responseService->sendSuccess($jwt, $callback);
     }
 }
