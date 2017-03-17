@@ -30,7 +30,7 @@ class JWTService
      * Generate a Json Web Token
      * @param Service $service
      * @param User $user
-     * @return string
+     * @return string|null
      */
     public function generate(Service $service, User $user)
     {
@@ -45,7 +45,15 @@ class JWTService
         
         $privateKey = $this->rsakeyService->getPrivateKey($service);
 
-        return JWT::encode($token, $privateKey, RSAKeyService::ALG);
+        if (!$privateKey) {
+            return null;
+        }
+
+        try {
+            return JWT::encode($token, $privateKey, RSAKeyService::ALG);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**
