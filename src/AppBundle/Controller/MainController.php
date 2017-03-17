@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Service;
+use AppBundle\Form\ServiceAllowType;
 use AppBundle\Form\ServiceType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -110,15 +111,25 @@ class MainController extends Controller
         if ($isAllow) {
             return $this->redirectToRoute("home");
         }
-        
-        if ($request->getMethod() === "POST") {
+
+        $form = $this->createForm(ServiceAllowType::class, null);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (!$form->getData()["allow"]) {
+                return $this->redirectToRoute("service_allow", array("uid" => $uid));
+            }
+
             $user->addService($service);
             $service->addUser($user);
             $em->flush();
+            
+            return $this->redirectToRoute("home");
         }
         
-        return $this->render('default/allow.html.twig', array(
-            "service" => $service
+        return $this->render('pages/allow.html.twig', array(
+            "service" => $service,
+            "form" => $form->createView()
         ));
     }
 }
