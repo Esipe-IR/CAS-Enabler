@@ -38,6 +38,23 @@ class APIController extends Controller
         $userService = $this->get("user.service");
         $user = $userService->getUserByUid($casUser->getUsername());
 
+        if ($request->query->get("service")) {
+            $em = $this->getDoctrine()->getManager();
+            $service = $em->getRepository("AppBundle:Service")->findOneBy(
+                array("uid" => $request->query->get("service"))
+            );
+
+            $isAllow = $em->getRepository("AppBundle:Service")->isAllow(
+                $service->getId(), $user->getId()
+            );
+
+            if (!$isAllow) {
+                return $this->redirectToRoute("service_allow", array(
+                    "redirect" => "service_connect"
+                ));
+            }
+        }
+
         $jwtService = $this->get("jwt.service");
         $token = $jwtService->generate($user);
 

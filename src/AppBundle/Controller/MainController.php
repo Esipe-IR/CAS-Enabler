@@ -90,12 +90,6 @@ class MainController extends Controller
         $userService = $this->get("user.service");
         $user = $userService->getUserByUid($casUser->getUsername());
 
-        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $user->getId());
-
-        if ($isAllow) {
-            return $this->redirectToRoute("home");
-        }
-
         $form = $this->createForm(ServiceAllowType::class, null);
 
         $form->handleRequest($request);
@@ -108,9 +102,7 @@ class MainController extends Controller
             $service->addUser($user);
             $em->flush();
             
-            return $this->redirectToRoute($request->query->get("redirect"), array(
-                "uid" => $uid
-            ));
+            return $this->redirectToRoute($request->query->get("redirect"));
         }
         
         return $this->render('pages/allow.html.twig', array(
