@@ -40,7 +40,7 @@ class RSAKeyService
      * @param Service $service
      * @return bool
      */
-    public function generate(Service $service)
+    public function generate(Service $service, $passphrase)
     {
         $config = array(
             'digest_alg' => self::ALG,
@@ -48,8 +48,11 @@ class RSAKeyService
             'private_key_type' => OPENSSL_KEYTYPE_RSA,
         );
 
-        $privKey = openssl_pkey_new($config);
-        //$privStatus = openssl_pkey_export_to_file($privKey, $privPath, $this->passphrase);
+        $pKey = openssl_pkey_new($config);
+
+        if(!openssl_pkey_export($pKey, $privKey, $passphrase)) {
+            return false;
+        }
 
         $pubPath = $this->keysDir . $service->getUid() . ".pub";
         $pubKey = openssl_pkey_get_details($privKey)["key"];

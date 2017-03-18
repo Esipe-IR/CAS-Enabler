@@ -14,6 +14,7 @@ class ServiceType extends AbstractType
             ->add('name')
             ->add('url')
             ->add('description')
+            ->add('passphrase')
             ->add('save', SubmitType::class)
         ;
     }

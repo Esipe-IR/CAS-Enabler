@@ -28,7 +28,10 @@ class MainController extends Controller
             $em->persist($service);
             $em->flush();
             
-            return $this->redirectToRoute("service_success", array("uid" => $service->getUid()));
+            return $this->redirectToRoute("service_success", array(
+                "uid" => $service->getUid(),
+                "passphrase" => $service->getPassphrase()
+            ));
         }
 
         return $this->render('pages/create.html.twig', array(
@@ -54,11 +57,15 @@ class MainController extends Controller
             return $this->redirectToRoute("service_create");
         }
         
-        $privateKey = $rsakeyService->generate($service);
+        $privateKey = $rsakeyService->generate($service, $request->query->get("passphrase"));
+
+        if (!$privateKey) {
+            return $this->redirectToRoute("service_create");
+        }
         
         return $this->render('pages/success.html.twig', array(
             "service" => $service,
-            "publicKey" => $privateKey
+            "privateKey" => $privateKey
         ));
     }
 

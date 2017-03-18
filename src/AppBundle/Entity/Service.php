@@ -55,6 +55,13 @@ class Service
     private $description;
 
     /**
+     * @var string
+     *
+     * @Assert\NotBlank()
+     */
+    private $passphrase;
+
+    /**
      * Many Services have Many Users.
      * @ORM\ManyToMany(targetEntity="User", inversedBy="services")
      * @ORM\JoinTable(name="users_services")
@@ -170,6 +177,30 @@ class Service
     public function getDescription()
     {
         return $this->description;
+    }
+
+    /**
+     * Set passphrase
+     *
+     * @param string $passphrase
+     *
+     * @return Service
+     */
+    public function setPassphrase($passphrase)
+    {
+        $this->passphrase = $passphrase;
+
+        return $this;
+    }
+
+    /**
+     * Get passphrase
+     *
+     * @return string
+     */
+    public function getPassphrase()
+    {
+        return $this->passphrase;
     }
 
     /**
