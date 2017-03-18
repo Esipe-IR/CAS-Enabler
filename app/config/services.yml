@@ -49,7 +49,7 @@ services:
   
   rsakey.service:
       class: AppBundle\Service\RSAKeyService
-      arguments: ["%kernel.root_dir%", "%keys.dir%", "%keys.passphrase%"]
+      arguments: ["%kernel.root_dir%", "%keys.dir%", "%master.passphrase%"]
 
   jwt.service:
       class: AppBundle\Service\JWTService
