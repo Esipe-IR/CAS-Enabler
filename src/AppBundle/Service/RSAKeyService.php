@@ -22,20 +22,7 @@ class RSAKeyService
         $this->keysDir = $kernelDir . $keysDir;
         $this->passphrase = $passphrase;
     }
-
-    /**
-     * @param Service $service
-     * @return bool
-     */
-    public function isValid(Service $service)
-    {
-        if ($this->getPublicKey($service)) {
-            return false;
-        }
-        
-        return true;
-    }
-
+    
     /**
      * @param Service $service
      * @return bool
@@ -49,14 +36,9 @@ class RSAKeyService
         );
 
         $privKey = openssl_pkey_new($config);
-        $privPath = $this->keysDir . $service->getUid();
-        $privStatus = openssl_pkey_export_to_file($privKey, $privPath, $this->passphrase);
+        //$privStatus = openssl_pkey_export_to_file($privKey, $privPath, $this->passphrase);
 
-        if (!$privStatus) {
-            return false;
-        }
-
-        $pubPath = $privPath . ".pub";
+        $pubPath = $this->keysDir . $service->getUid() . ".pub";
         $pubKey = openssl_pkey_get_details($privKey)["key"];
         $pubStatus = file_put_contents($pubPath, $pubKey);
         
@@ -64,17 +46,16 @@ class RSAKeyService
             return false;
         }
 
-        return $pubKey;
+        return $privKey;
     }
 
     /**
-     * @param Service $service
      * @return resource|null
      */
-    public function getPrivateKey(Service $service)
+    public function getPrivateKey()
     {
         try {
-            $key = file_get_contents($this->keysDir . $service->getUid());
+            $key = file_get_contents($this->keysDir . "master");
 
             return openssl_pkey_get_private($key, $this->passphrase);
         } catch (\Exception $e) {
@@ -83,10 +64,24 @@ class RSAKeyService
     }
 
     /**
-     * @param Service $service
      * @return resource|null
      */
-    public function getPublicKey(Service $service)
+    public function getPublicKey()
+    {
+        try {
+            $key = file_get_contents($this->keysDir . "master.pub");
+
+            return openssl_pkey_get_public($key);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * @param Service $service
+     * @return null|resource
+     */
+    public function getServicePublicKey(Service $service)
     {
         try {
             $key = file_get_contents($this->keysDir . $service->getUid() . ".pub");

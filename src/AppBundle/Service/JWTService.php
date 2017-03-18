@@ -28,30 +28,30 @@ class JWTService
 
     /**
      * Generate a Json Web Token
-     * @param Service $service
      * @param User $user
-     * @return string|null
+     * @return null|string
      */
-    public function generate(Service $service, User $user)
+    public function generate(User $user)
     {
-        $privateKey = $this->rsakeyService->getPrivateKey($service);
+        $privateKey = $this->rsakeyService->getPrivateKey();
 
         if (!$privateKey) {
             return null;
         }
 
-        $usrJson = json_encode($user->toArray());
-        if (!openssl_private_encrypt($usrJson, $usr, $privateKey)) {
-            return false;
-        }
+        $success = openssl_private_encrypt($user->getUid(), $uid, $privateKey);
 
+        if (!$success) {
+            return null;
+        }
+        
         $token = array(
             "iss" => $this->host,
-            "aud" => $service->getUid(),
+            "aud" => $this->host,
             "iat" => time(),
             "nbf" => time(),
             "exp" => time() + 1000,
-            "usr" => base64_encode($usr)
+            "uid" => base64_encode($uid)
         );
 
         try {
@@ -63,13 +63,12 @@ class JWTService
 
     /**
      * Verify if Json Web Token is valid
-     * @param Service $service
      * @param string $token
      * @return bool
      */
-    public function verify(Service $service, $token)
+    public function verify($token)
     {
-        $publicKey = $this->rsakeyService->getPublicKey($service);
+        $publicKey = $this->rsakeyService->getPublicKey();
 
         try {
             JWT::decode($token, $publicKey, array(RSAKeyService::ALG));
@@ -82,13 +81,12 @@ class JWTService
 
     /**
      * Decode Json Web Token to plain object
-     * @param Service $service
      * @param string $token
      * @return null|object
      */
-    public function decode(Service $service, $token)
+    public function decode($token)
     {
-        $publicKey = $this->rsakeyService->getPublicKey($service);
+        $publicKey = $this->rsakeyService->getPublicKey();
 
         try {
             $jwt = JWT::decode($token, $publicKey, array(RSAKeyService::ALG));
@@ -97,5 +95,45 @@ class JWTService
         }
 
         return $jwt;
+    }
+
+    /**
+     * Decode uid contain in Json Web Token
+     * @param $uid
+     * @return null|string
+     */
+    public function decodeUid($uid)
+    {
+        $publicKey = $this->rsakeyService->getPublicKey();
+        $success = openssl_public_decrypt(base64_decode($uid), $usr, $publicKey);
+
+        if (!$success) {
+            return null;
+        }
+
+        return $usr;
+    }
+
+    /**
+     * @param Service $service
+     * @param User $user
+     * @return null|string
+     */
+    public function encodeUser(Service $service, User $user)
+    {
+        $publicKey = $this->rsakeyService->getServicePublicKey($service);
+
+        if (!$publicKey) {
+            return null;
+        }
+
+        $json = json_encode($user->toArray());
+        $success = openssl_public_encrypt($json, $usr, $publicKey);
+
+        if (!$success) {
+            return null;
+        }
+
+        return base64_encode($usr);
     }
 }

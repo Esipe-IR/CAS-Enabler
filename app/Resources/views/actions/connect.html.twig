@@ -12,9 +12,9 @@
         });
 
         {% set method = "error" %}
-        {% set params = action %}
+        {% set params = code %}
 
-        {% if not action %}
+        {% if not code %}
             {% set method = "connect" %}
             {% set params = token %}
         {% endif %}
@@ -23,9 +23,7 @@
             method: "{{ method }}",
             params: "{{ params }}",
             success: function (r) {
-                if (r) {
-                    window.close();
-                }
+                if (r) window.close();
             }
         });
     </script>

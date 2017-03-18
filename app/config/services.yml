@@ -20,7 +20,7 @@ parameters:
         accountstatus:
           - true
   ldap.class:
-      6ir1: Esipe/Informatique et Réseaux 1
+      6ir1: Esipe - Informatique et Reseaux - 1
 
   cas.fake.user:
       user: test

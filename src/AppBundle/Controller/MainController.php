@@ -50,51 +50,32 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/service/{uid}/connect", name="service_connect")
+     * @Route("/~vrasquie/cas/connect", name="service_connect")
      */
-    public function connectAction(Request $request, $uid)
+    public function connectAction(Request $request)
     {
         $casUser = $this->getUser();
 
         if (!$casUser) {
             return $this->redirectToRoute("auth", array(
-                "uid" => $uid,
                 "redirect" => "service_connect"
-            ));
-        }
-
-        $em = $this->getDoctrine()->getManager();
-        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
-
-        if (!$service) {
-            return $this->render('actions/connect.html.twig', array(
-                "action" => 2
             ));
         }
 
         $userService = $this->get("user.service");
         $user = $userService->getUserByUid($casUser->getUsername());
 
-        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $user->getId());
-
-        if (!$isAllow) {
-            return $this->redirectToRoute("service_allow", array(
-                "uid" => $uid,
-                "redirect" => "service_connect"
-            ));
-        }
-
         $jwtService = $this->get("jwt.service");
-        $token = $jwtService->generate($service, $user);
+        $token = $jwtService->generate($user);
 
         if (!$token) {
             return $this->render('actions/connect.html.twig', array(
-                "action" => 4
+                "code" => 2
             ));
         }
 
         return $this->render('actions/connect.html.twig', array(
-            "action" => 0,
+            "code" => 0,
             "token" => $token
         ));
     }
