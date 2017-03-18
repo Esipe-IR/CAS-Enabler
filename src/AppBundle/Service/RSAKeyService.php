@@ -22,6 +22,19 @@ class RSAKeyService
         $this->keysDir = $kernelDir . $keysDir;
         $this->passphrase = $passphrase;
     }
+
+    /**
+     * @param Service $service
+     * @return bool
+     */
+    public function isValid(Service $service)
+    {
+        if (file_exists($this->keysDir . $service->getUid() . ".pub")) {
+            return true;
+        }
+
+        return false;
+    }
     
     /**
      * @param Service $service

@@ -3,19 +3,19 @@
 {% block body %}
     <div class="row">
         <div class="col-sm-12">
-            <p class="text-success">Your service has been created</p>
+            <h1 class="text-success">Your service has been created</h1>
 
             <p class="bg-danger">
                 <b>CAUTION !</b> for security concern, those information are
                 for the first and <b>last time</b> delivered to you. <b>THEY WILL NEVER BE PRINT AGAIN !</b>
             </p>
 
-            {% if publicKey %}
+            {% if privateKey %}
                 <p class="bg-success">
-                    SAVE THIS PUBLIC KEY
+                    SAVE THIS PRIVATE KEY
                 </p>
 
-                <pre>{{ publicKey }}</pre>
+                <pre>{{ privateKey }}</pre>
             {% endif %}
 
             {% if service.uid %}

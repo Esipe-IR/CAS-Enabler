@@ -45,20 +45,20 @@ class MainController extends Controller
         $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
         
         if (!$service) {
-            return $this->redirectToRoute("home");
+            return $this->redirectToRoute("service_create");
         }
         
         $rsakeyService = $this->get("rsakey.service");
         
-        if (!$rsakeyService->isValid($service)) {
-            return $this->redirectToRoute("home");
+        if ($rsakeyService->isValid($service)) {
+            return $this->redirectToRoute("service_create");
         }
         
-        $publicKey = $rsakeyService->generate($service);
+        $privateKey = $rsakeyService->generate($service);
         
         return $this->render('pages/success.html.twig', array(
             "service" => $service,
-            "publicKey" => $publicKey
+            "publicKey" => $privateKey
         ));
     }
 
