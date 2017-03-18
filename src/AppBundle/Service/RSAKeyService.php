@@ -55,7 +55,12 @@ class RSAKeyService
         }
 
         $pubPath = $this->keysDir . $service->getUid() . ".pub";
-        $pubKey = openssl_pkey_get_details($privKey)["key"];
+        $pubKey = openssl_pkey_get_details($pKey)["key"];
+
+        if (!$pubKey) {
+            return false;
+        }
+
         $pubStatus = file_put_contents($pubPath, $pubKey);
         
         if ($pubStatus === false) {

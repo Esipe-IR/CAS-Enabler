@@ -23,14 +23,24 @@ class MainController extends Controller
             $uidService = $this->get("uid.service");
             $uid = $uidService->generate();
             $service->setUid($uid);
+            
+            $publicUid = $uidService->generate();
+            $service->setPublicUid($publicUid);
 
             $em = $this->getDoctrine()->getManager();
             $em->persist($service);
             $em->flush();
-            
-            return $this->redirectToRoute("service_success", array(
-                "uid" => $service->getUid(),
-                "passphrase" => $service->getPassphrase()
+
+            $rsakeyService = $this->get("rsakey.service");
+            $privateKey = $rsakeyService->generate($service, $service->getPassphrase());
+
+            if (!$privateKey) {
+                return $this->redirectToRoute("service_create");
+            }
+
+            return $this->render('pages/success.html.twig', array(
+                "service" => $service,
+                "privateKey" => $privateKey
             ));
         }
 
@@ -40,39 +50,9 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/service/{uid}/success", name="service_success")
+     * @Route("/~vrasquie/cas/service/{publicUid}/allow", name="service_allow")
      */
-    public function successAction(Request $request, $uid)
-    {
-        $em = $this->getDoctrine()->getManager();
-        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
-        
-        if (!$service) {
-            return $this->redirectToRoute("service_create");
-        }
-        
-        $rsakeyService = $this->get("rsakey.service");
-        
-        if ($rsakeyService->isValid($service)) {
-            return $this->redirectToRoute("service_create");
-        }
-        
-        $privateKey = $rsakeyService->generate($service, $request->query->get("passphrase"));
-
-        if (!$privateKey) {
-            return $this->redirectToRoute("service_create");
-        }
-        
-        return $this->render('pages/success.html.twig', array(
-            "service" => $service,
-            "privateKey" => $privateKey
-        ));
-    }
-
-    /**
-     * @Route("/~vrasquie/cas/service/{uid}/allow", name="service_allow")
-     */
-    public function allowAction(Request $request, $uid)
+    public function allowAction(Request $request, $publicUid)
     {
         $casUser = $this->getUser();
 
@@ -81,7 +61,9 @@ class MainController extends Controller
         }
 
         $em = $this->getDoctrine()->getManager();
-        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
+        $service = $em->getRepository("AppBundle:Service")->findOneBy(
+            array("publicUid" => $publicUid)
+        );
 
         if (!$service) {
             return $this->redirectToRoute("home");
@@ -95,14 +77,16 @@ class MainController extends Controller
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             if (!$form->getData()["allow"]) {
-                return $this->redirectToRoute("service_allow", array("uid" => $uid));
+                return $this->redirectToRoute("service_allow", array("publicUid" => $publicUid));
             }
 
             $user->addService($service);
             $service->addUser($user);
             $em->flush();
             
-            return $this->redirectToRoute($request->query->get("redirect"));
+            return $this->redirectToRoute($request->query->get("redirect"), array(
+                "publicUid" => $publicUid
+            ));
         }
         
         return $this->render('pages/allow.html.twig', array(

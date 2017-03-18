@@ -33,6 +33,13 @@ class Service
     /**
      * @var string
      *
+     * @ORM\Column(name="public_uid", type="string", length=255, unique=true)
+     */
+    private $publicUid;
+
+    /**
+     * @var string
+     *
      * @Assert\NotBlank()
      * @ORM\Column(name="name", type="string", length=255)
      */
@@ -129,6 +136,30 @@ class Service
     public function getUid()
     {
         return $this->uid;
+    }
+
+    /**
+     * Set publicUid
+     *
+     * @param string $publicUid
+     *
+     * @return Service
+     */
+    public function setPublicUid($publicUid)
+    {
+        $this->publicUid = $publicUid;
+
+        return $this;
+    }
+
+    /**
+     * Get publicUid
+     *
+     * @return string
+     */
+    public function getPublicUid()
+    {
+        return $this->publicUid;
     }
 
     /**

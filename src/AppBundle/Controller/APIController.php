@@ -15,22 +15,25 @@ class APIController extends Controller
     public function authAction(Request $request)
     {
         if ($request->query->get("redirect")) {
-            return $this->redirectToRoute($request->query->get("redirect"));
+            return $this->redirectToRoute($request->query->get("redirect"), array(
+                "publicUid" => $request->query->get("publicUid")
+            ));
         }
 
         return new Response("Success! You are now connected. You can close this window.");
     }
 
     /**
-     * @Route("/~vrasquie/cas/connect", name="service_connect")
+     * @Route("/~vrasquie/cas/service/{publicUid}/connect", name="service_connect")
      */
-    public function connectAction(Request $request)
+    public function connectAction(Request $request, $publicUid)
     {
         $casUser = $this->getUser();
         $code = 0;
 
         if (!$casUser) {
             return $this->redirectToRoute("auth", array(
+                "publicUid" => $publicUid,
                 "redirect" => "service_connect"
             ));
         }
@@ -38,21 +41,20 @@ class APIController extends Controller
         $userService = $this->get("user.service");
         $user = $userService->getUserByUid($casUser->getUsername());
 
-        if ($request->query->get("service")) {
-            $em = $this->getDoctrine()->getManager();
-            $service = $em->getRepository("AppBundle:Service")->findOneBy(
-                array("uid" => $request->query->get("service"))
-            );
+        $repo = $this->getDoctrine()->getManager()->getRepository("AppBundle:Service");
+        $service = $repo->findOneBy(array("publicUid" => $publicUid));
 
-            $isAllow = $em->getRepository("AppBundle:Service")->isAllow(
-                $service->getId(), $user->getId()
-            );
+        if (!$service) {
+            //
+        }
 
-            if (!$isAllow) {
-                return $this->redirectToRoute("service_allow", array(
-                    "redirect" => "service_connect"
-                ));
-            }
+        $isAllow = $repo->isAllow($service->getId(), $user->getId());
+
+        if (!$isAllow) {
+            return $this->redirectToRoute("service_allow", array(
+                "publicUid" => $publicUid,
+                "redirect" => "service_connect"
+            ));
         }
 
         $jwtService = $this->get("jwt.service");

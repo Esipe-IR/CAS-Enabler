@@ -10,21 +10,21 @@
                 for the first and <b>last time</b> delivered to you. <b>THEY WILL NEVER BE PRINT AGAIN !</b>
             </p>
 
-            {% if privateKey %}
-                <p class="bg-success">
-                    SAVE THIS PRIVATE KEY
-                </p>
+            <p class="bg-success">
+                SAVE THIS PRIVATE KEY (keep it secret)
+            </p>
+            <pre>{{ privateKey }}</pre>
 
-                <pre>{{ privateKey }}</pre>
-            {% endif %}
 
-            {% if service.uid %}
-                <p class="bg-success">
-                    SAVE THIS UID
-                </p>
+            <p class="bg-success">
+                SAVE THIS PRIVATE UID (keep it secret)
+            </p>
+            <pre>{{ service.uid }}</pre>
 
-                <pre>{{ service.uid }}</pre>
-            {% endif %}
+            <p class="bg-success">
+                SAVE THIS PUBLIC UID
+            </p>
+            <pre>{{ service.publicUid }}</pre>
         </div>
     </div>
 {% endblock %}
