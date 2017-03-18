@@ -33,6 +33,13 @@ class Service
     /**
      * @var string
      *
+     * @ORM\Column(name="public_uid", type="string", length=255, unique=true)
+     */
+    private $publicUid;
+
+    /**
+     * @var string
+     *
      * @Assert\NotBlank()
      * @ORM\Column(name="name", type="string", length=255)
      */
@@ -53,6 +60,13 @@ class Service
      * @ORM\Column(name="description", type="text")
      */
     private $description;
+
+    /**
+     * @var string
+     *
+     * @Assert\NotBlank()
+     */
+    private $passphrase;
 
     /**
      * Many Services have Many Users.
@@ -125,6 +139,30 @@ class Service
     }
 
     /**
+     * Set publicUid
+     *
+     * @param string $publicUid
+     *
+     * @return Service
+     */
+    public function setPublicUid($publicUid)
+    {
+        $this->publicUid = $publicUid;
+
+        return $this;
+    }
+
+    /**
+     * Get publicUid
+     *
+     * @return string
+     */
+    public function getPublicUid()
+    {
+        return $this->publicUid;
+    }
+
+    /**
      * Set url
      *
      * @param string $url
@@ -170,6 +208,30 @@ class Service
     public function getDescription()
     {
         return $this->description;
+    }
+
+    /**
+     * Set passphrase
+     *
+     * @param string $passphrase
+     *
+     * @return Service
+     */
+    public function setPassphrase($passphrase)
+    {
+        $this->passphrase = $passphrase;
+
+        return $this;
+    }
+
+    /**
+     * Get passphrase
+     *
+     * @return string
+     */
+    public function getPassphrase()
+    {
+        return $this->passphrase;
     }
 
     /**

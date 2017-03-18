@@ -29,18 +29,18 @@ class RSAKeyService
      */
     public function isValid(Service $service)
     {
-        if ($this->getPublicKey($service)) {
-            return false;
+        if (file_exists($this->keysDir . $service->getUid() . ".pub")) {
+            return true;
         }
-        
-        return true;
-    }
 
+        return false;
+    }
+    
     /**
      * @param Service $service
      * @return bool
      */
-    public function generate(Service $service)
+    public function generate(Service $service, $passphrase)
     {
         $config = array(
             'digest_alg' => self::ALG,
@@ -48,33 +48,35 @@ class RSAKeyService
             'private_key_type' => OPENSSL_KEYTYPE_RSA,
         );
 
-        $privKey = openssl_pkey_new($config);
-        $privPath = $this->keysDir . $service->getUid();
-        $privStatus = openssl_pkey_export_to_file($privKey, $privPath, $this->passphrase);
+        $pKey = openssl_pkey_new($config);
 
-        if (!$privStatus) {
+        if(!openssl_pkey_export($pKey, $privKey, $passphrase)) {
             return false;
         }
 
-        $pubPath = $privPath . ".pub";
-        $pubKey = openssl_pkey_get_details($privKey)["key"];
+        $pubPath = $this->keysDir . $service->getUid() . ".pub";
+        $pubKey = openssl_pkey_get_details($pKey)["key"];
+
+        if (!$pubKey) {
+            return false;
+        }
+
         $pubStatus = file_put_contents($pubPath, $pubKey);
         
         if ($pubStatus === false) {
             return false;
         }
 
-        return $pubKey;
+        return $privKey;
     }
 
     /**
-     * @param Service $service
      * @return resource|null
      */
-    public function getPrivateKey(Service $service)
+    public function getPrivateKey()
     {
         try {
-            $key = file_get_contents($this->keysDir . $service->getUid());
+            $key = file_get_contents($this->keysDir . "master");
 
             return openssl_pkey_get_private($key, $this->passphrase);
         } catch (\Exception $e) {
@@ -83,10 +85,24 @@ class RSAKeyService
     }
 
     /**
-     * @param Service $service
      * @return resource|null
      */
-    public function getPublicKey(Service $service)
+    public function getPublicKey()
+    {
+        try {
+            $key = file_get_contents($this->keysDir . "master.pub");
+
+            return openssl_pkey_get_public($key);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * @param Service $service
+     * @return null|resource
+     */
+    public function getServicePublicKey(Service $service)
     {
         try {
             $key = file_get_contents($this->keysDir . $service->getUid() . ".pub");
