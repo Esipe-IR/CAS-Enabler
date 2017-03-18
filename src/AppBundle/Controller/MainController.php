@@ -8,9 +8,24 @@ use AppBundle\Form\ServiceType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class MainController extends Controller
 {
+    /**
+     * @Route("/~vrasquie/cas/auth", name="auth")
+     */
+    public function authAction(Request $request)
+    {
+        if ($request->query->get("redirect")) {
+            return $this->redirectToRoute($request->query->get("redirect"), array(
+                "publicUid" => $request->query->get("publicUid")
+            ));
+        }
+
+        return new Response("Success! You are now connected. You can close this window.");
+    }
+    
     /**
      * @Route("/~vrasquie/cas/service/create", name="service_create")
      */
@@ -46,6 +61,58 @@ class MainController extends Controller
 
         return $this->render('pages/create.html.twig', array(
             "form" => $form->createView()
+        ));
+    }
+
+    /**
+     * @Route("/~vrasquie/cas/service/{publicUid}/connect", name="service_connect")
+     */
+    public function connectAction(Request $request, $publicUid)
+    {
+        $casUser = $this->getUser();
+
+        if (!$casUser) {
+            return $this->redirectToRoute("auth", array(
+                "publicUid" => $publicUid,
+                "redirect" => "service_connect"
+            ));
+        }
+
+        $userService = $this->get("user.service");
+        $user = $userService->getUserByUid($casUser->getUsername());
+
+        $repo = $this->getDoctrine()->getManager()->getRepository("AppBundle:Service");
+        $service = $repo->findOneBy(array("publicUid" => $publicUid));
+
+        if (!$service) {
+            return $this->render('actions/connect.html.twig', array(
+                "code" => 8,
+                "token" => null
+            ));
+        }
+
+        $isAllow = $repo->isAllow($service->getId(), $user->getId());
+
+        if (!$isAllow) {
+            return $this->redirectToRoute("service_allow", array(
+                "publicUid" => $publicUid,
+                "redirect" => "service_connect"
+            ));
+        }
+
+        $jwtService = $this->get("jwt.service");
+        $token = $jwtService->generate($user);
+
+        if (!$token) {
+            return $this->render('actions/connect.html.twig', array(
+                "code" => 2,
+                "token" => null
+            ));
+        }
+
+        return $this->render('actions/connect.html.twig', array(
+            "code" => 0,
+            "token" => $token
         ));
     }
 

@@ -10,16 +10,26 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class ResponseService
 {
+    private $errorMapping;
+
+    /**
+     * ResponseService constructor.
+     * @param array $errorMapping
+     */
+    public function __construct(array $errorMapping)
+    {
+        $this->errorMapping = $errorMapping;
+    }
+
     /**
      * @param bool $status
      * @param int $code
      * @param string $data
      * @param string $error
-     * @param string|null $callback
      * @return JsonResponse
      * @throws \Exception
      */
-    public function send($status, $code, $data, $error, $callback = null)
+    public function send($status, $code, $data, $error)
     {
         $response = new JsonResponse();
         $response->setStatusCode(200);
@@ -30,31 +40,25 @@ class ResponseService
             'error'     => $error
         ));
 
-        if ($callback) {
-            $response->setCallback($callback);
-        }
-
         return $response;
     }
 
     /**
      * @param int $code
-     * @param string $error
-     * @param string|null $callback
      * @return JsonResponse
      */
-    public function sendError($code, $error, $callback = null)
+    public function sendError($code)
     {
-        return $this->send(false, $code, null, $error, $callback);
+        $error = $this->errorMapping[$code];
+        return $this->send(false, $code, null, $error);
     }
 
     /**
      * @param string $data
-     * @param string|null $callback
      * @return JsonResponse
      */
-    public function sendSuccess($data, $callback = null)
+    public function sendSuccess($data)
     {
-        return $this->send(true, 0, $data, null, $callback);
+        return $this->send(true, 0, $data, null);
     }
 }

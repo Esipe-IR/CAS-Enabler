@@ -39,6 +39,20 @@ parameters:
       server_logout_url: https://cas.u-pem.fr/logout
       xml_namespace: cas
 
+  error.mapping:
+      0: ~
+      1: Not connected
+      2: Token fatal error
+      3: Undefined token
+      4: Not valid token
+      5: Unallowed token
+      6: Service fatal error
+      7: Undefined service
+      8: Not valid service
+      9: Unallowed service
+      10: Uid encrypt fatal error
+      11: User fatal error
+
 services:
   ldap.service:
       class: AppBundle\Service\LdapService
@@ -46,6 +60,7 @@ services:
   
   response.service:
       class: AppBundle\Service\ResponseService
+      arguments: ["%error.mapping%"]
   
   rsakey.service:
       class: AppBundle\Service\RSAKeyService
