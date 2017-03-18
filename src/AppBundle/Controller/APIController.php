@@ -5,9 +5,52 @@ namespace AppBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class APIController extends Controller
 {
+    /**
+     * @Route("/~vrasquie/cas/auth", name="auth")
+     */
+    public function authAction(Request $request)
+    {
+        if ($request->query->get("redirect")) {
+            return $this->redirectToRoute($request->query->get("redirect"));
+        }
+
+        return new Response("Success! You are now connected. You can close this window.");
+    }
+
+    /**
+     * @Route("/~vrasquie/cas/connect", name="service_connect")
+     */
+    public function connectAction(Request $request)
+    {
+        $casUser = $this->getUser();
+        $code = 0;
+
+        if (!$casUser) {
+            return $this->redirectToRoute("auth", array(
+                "redirect" => "service_connect"
+            ));
+        }
+
+        $userService = $this->get("user.service");
+        $user = $userService->getUserByUid($casUser->getUsername());
+
+        $jwtService = $this->get("jwt.service");
+        $token = $jwtService->generate($user);
+
+        if (!$token) {
+            $code = 2;
+        }
+
+        return $this->render('actions/connect.html.twig', array(
+            "code" => $code,
+            "token" => $token
+        ));
+    }
+
     /**
      * @Route("/~vrasquie/cas/token", name="token")
      */

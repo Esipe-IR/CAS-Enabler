@@ -8,22 +8,9 @@ use AppBundle\Form\ServiceType;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class MainController extends Controller
 {
-    /**
-     * @Route("/~vrasquie/cas/auth", name="auth")
-     */
-    public function authAction(Request $request)
-    {
-        if ($request->query->get("redirect")) {
-            return $this->redirectToRoute($request->query->get("redirect"), array("uid" => $request->query->get("uid")));
-        }
-
-        return new Response("Success! You are now connected. You can close this window.");
-    }
-
     /**
      * @Route("/~vrasquie/cas/service/create", name="service_create")
      */
@@ -46,37 +33,6 @@ class MainController extends Controller
 
         return $this->render('pages/create.html.twig', array(
             "form" => $form->createView()
-        ));
-    }
-
-    /**
-     * @Route("/~vrasquie/cas/connect", name="service_connect")
-     */
-    public function connectAction(Request $request)
-    {
-        $casUser = $this->getUser();
-
-        if (!$casUser) {
-            return $this->redirectToRoute("auth", array(
-                "redirect" => "service_connect"
-            ));
-        }
-
-        $userService = $this->get("user.service");
-        $user = $userService->getUserByUid($casUser->getUsername());
-
-        $jwtService = $this->get("jwt.service");
-        $token = $jwtService->generate($user);
-
-        if (!$token) {
-            return $this->render('actions/connect.html.twig', array(
-                "code" => 2
-            ));
-        }
-
-        return $this->render('actions/connect.html.twig', array(
-            "code" => 0,
-            "token" => $token
         ));
     }
 
@@ -154,30 +110,5 @@ class MainController extends Controller
             "service" => $service,
             "form" => $form->createView()
         ));
-    }
-
-    /**
-     * @Route("/~vrasquie/cas/service/{uid}/token/{token}", name="service_verify")
-     */
-    public function serviceVerifyAction(Request $request, $uid, $token)
-    {
-        $callback = $request->query->get("callback");
-        $responseService = $this->get("response.service");
-        $jwtService = $this->get("jwt.service");
-
-        $em = $this->getDoctrine()->getManager();
-        $service = $em->getRepository("AppBundle:Service")->findOneBy(array("uid" => $uid));
-
-        if (!$service) {
-            return $responseService->sendError(2, "Nonexistent service", $callback);
-        }
-
-        $jwt = $jwtService->verify($service, $token);
-
-        if (!$jwt) {
-            return $responseService->sendError(5, "Not valid token", $callback);
-        }
-
-        return $responseService->sendSuccess($jwt, $callback);
     }
 }
