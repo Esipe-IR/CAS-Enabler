@@ -1,30 +1,25 @@
 {% extends 'base.iframe.html.twig' %}
 
 {% block body %}
+    <div style="margin: 0 auto; text-align: center;">
+        <button id="continue" style="
+            background: #FB9F32;
+            border: none;
+            padding: 15px;
+            color: white;
+            cursor: pointer;">
+            Continue as {{ app.user.username }}
+        </button>
+    </div>
 {% endblock %}
 
 {% block javascripts %}
     <script>
-        var $chan = Channel.build({
-            window: window.opener,
-            origin: "*",
-            scope: "CAS.Scope"
-        });
+        var src = window.opener;
+        var btn = document.getElementById("continue");
 
-        {% set method = "error" %}
-        {% set params = code %}
-
-        {% if not code %}
-            {% set method = "connect" %}
-            {% set params = token %}
-        {% endif %}
-
-        $chan.call({
-            method: "{{ method }}",
-            params: "{{ params }}",
-            success: function (r) {
-                if (r) window.close();
-            }
+        btn.addEventListener("click", function () {
+            if (src) src.postMessage({{ response|json_encode|raw }}, src.document.URL);
         });
     </script>
 {% endblock %}

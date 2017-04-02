@@ -70,9 +70,6 @@ services:
       class: AppBundle\Service\JWTService
       arguments: ["@rsakey.service", "%host%"]
 
-  uid.service:
-      class: AppBundle\Service\UIDService
-
   user.service:
       class: AppBundle\Service\UserService
       arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%ldap.class%"]
@@ -80,9 +77,3 @@ services:
   cas.enabler.authenticator:
       class: AppBundle\Security\CasEnablerAuthenticator
       arguments: ["%cas.enabler.auth%"]
-
-  router.listener:
-      class: AppBundle\EventListener\RouterListener
-      arguments: ["%host.base_url%", "%kernel.environment%"]
-      tags:
-          - { name: kernel.event_subscriber }

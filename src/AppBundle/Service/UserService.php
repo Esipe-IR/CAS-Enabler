@@ -29,24 +29,6 @@ class UserService
     }
 
     /**
-     * @param $username
-     * @return User|null|object
-     */
-    public function checkIfExist($username)
-    {
-        $user = $this->em->getRepository("AppBundle:User")->findOneBy(array("uid" => $username));
-
-        if (!$user) {
-            $user = new User();
-            $user->setUid($username);
-            $this->em->persist($user);
-            $this->em->flush();
-        }
-
-        return $user;
-    }
-
-    /**
      * @param $homeDir
      * @return string
      */
@@ -63,14 +45,16 @@ class UserService
     }
 
     /**
-     * @param User $user
+     * @param $uid
      * @return User
      */
-    public function getLdapUser(User $user)
+    public function getUserByUid($uid)
     {
-        $ldapUser = $this->ldapService->getUser($user->getUid());
+        $user = new User();
+        $ldapUser = $this->ldapService->getUser($uid);
 
         if ($this->ldapService->isValid($ldapUser)) {
+            $user->setUid($uid);
             $user->setName($ldapUser["givenname"][0]);
             $user->setLastname($ldapUser["sn"][0]);
             $user->setUid($ldapUser["uid"][0]);
@@ -78,19 +62,9 @@ class UserService
             $user->setEtuId((int)$ldapUser["supannetuid"][0]);
             $user->setClass($this->homeDirToClass($ldapUser["homedirectory"][0]));
             $user->setStatus((bool)$ldapUser["accountstatus"][0]);
+            $user->setHomeDir($ldapUser["homedirectory"][0]);
         }
 
         return $user;
-    }
-
-    /**
-     * @param $uid
-     * @return User
-     */
-    public function getUserByUid($uid)
-    {
-        $user = $this->checkIfExist($uid);
-        
-        return $this->getLdapUser($user);
     }
 }

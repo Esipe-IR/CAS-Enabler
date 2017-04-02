@@ -34,59 +34,11 @@ class APIController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/user", name="service_user")
+     * @Route("/~vrasquie/cas/edt", name="edt")
      */
-    public function userAction(Request $request)
+    public function edtAction(Request $request)
     {
-        $token = $request->headers->get("token");
-        $service = $request->headers->get("service");
-        $responseService = $this->get("response.service");
+        //https://edt.u-pem.fr/jsp/custom/modules/plannings/anonymous_cal.jsp?resources=1813,1806,1812,1811,1807,1640,5314&projectId=19&calType=ical&nbWeeks=4&sqlMode=true
 
-        if (!$token) {
-            return $responseService->sendError(3);
-        }
-
-        if (!$service) {
-            return $responseService->sendError(7);
-        }
-
-        $em = $this->getDoctrine()->getManager();
-        $service = $em->getRepository("AppBundle:Service")->findOneBy(array(
-            "uid" => $service
-        ));
-
-        if (!$service) {
-            return $responseService->sendError(8);
-        }
-
-        $jwtService = $this->get("jwt.service");
-        $jwt = $jwtService->decode($token);
-
-        if (!$jwt) {
-            return $responseService->sendError(4);
-        }
-
-        $uid = $jwtService->decodeUid($jwt->uid);
-
-        if (!$uid) {
-            return $responseService->sendError(10);
-        }
-
-        $userService = $this->get("user.service");
-        $user = $userService->getUserByUid($uid);
-
-        $isAllow = $em->getRepository("AppBundle:Service")->isAllow($service->getId(), $user->getId());
-
-        if (!$isAllow) {
-            return $responseService->sendError(9);
-        }
-        
-        $usr = $jwtService->encodeUser($service, $user);
-        
-        if (!$usr) {
-            return $responseService->sendError(11);
-        }
-
-        return $responseService->sendSuccess($usr);
     }
 }
