@@ -1,25 +1,59 @@
 {% extends 'base.iframe.html.twig' %}
 
 {% block body %}
-    <div style="margin: 0 auto; text-align: center;">
-        <button id="continue" style="
-            background: #FB9F32;
-            border: none;
-            padding: 15px;
-            color: white;
-            cursor: pointer;">
-            Continue as {{ app.user.username }}
-        </button>
-    </div>
+    <button id="connect" style="
+        background: #EB5B0C;
+        padding: 10px 15px;
+        color: white;
+        border: none;
+        border-radius: 2px;
+        cursor: pointer;">
+        UPEM Connect
+    </button>
 {% endblock %}
 
 {% block javascripts %}
     <script>
-        var src = window.opener;
-        var btn = document.getElementById("continue");
+        var c = "{{ connected }}";
 
-        btn.addEventListener("click", function () {
-            if (src) src.postMessage({{ response|json_encode|raw }}, src.document.URL);
+        function call() {
+            var xml = new XMLHttpRequest();
+
+            xml.onreadystatechange = function() {
+                if (xml.readyState != XMLHttpRequest.DONE ) {
+                    return;
+                }
+
+                if (xml.status == 200) {
+                    if (!window.top) return;
+
+                    var data = xml.responseText;
+                    try {
+                        data = JSON.parse(data);
+                    } catch (e) {}
+
+                    window.top.postMessage(data, window.top.document.URL);
+                }
+            };
+
+            xml.open("GET", "{{ path('token') }}", true);
+            xml.send();
+        }
+
+        window.addEventListener("message", function(event) {
+            call();
+        });
+
+        document.getElementById("connect").addEventListener("click", function () {
+            if (!c) {
+                return window.open(
+                        "{{ path("auth") }}",
+                        "dd",
+                        'scrollbars=yes, width=' + 800 + ', height=' + 400
+                );
+            }
+
+            call();
         });
     </script>
 {% endblock %}

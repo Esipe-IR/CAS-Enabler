@@ -20,7 +20,7 @@ parameters:
         accountstatus:
           - true
   ldap.class:
-      6ir1: Esipe - Informatique et Reseaux - 1
+      6ir1: ir1
 
   cas.fake.user:
       user: test
@@ -46,12 +46,6 @@ parameters:
       3: Undefined token
       4: Not valid token
       5: Unallowed token
-      6: Service fatal error
-      7: Undefined service
-      8: Not valid service
-      9: Unallowed service
-      10: Uid encrypt fatal error
-      11: User fatal error
 
 services:
   ldap.service:
