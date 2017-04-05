@@ -14,8 +14,6 @@
 
 {% block javascripts %}
     <script>
-        var c = "{{ connected }}";
-
         function call() {
             var xml = new XMLHttpRequest();
 
@@ -40,20 +38,16 @@
             xml.send();
         }
 
-        window.addEventListener("message", function(event) {
+        window.addEventListener("message", function() {
             call();
         });
 
         document.getElementById("connect").addEventListener("click", function () {
-            if (!c) {
-                return window.open(
-                        "{{ path("auth") }}",
-                        "dd",
-                        'scrollbars=yes, width=' + 800 + ', height=' + 400
-                );
+            if ("{{ connected }}") {
+                window.open("{{ path("auth") }}", "UPEM Connect", 'scrollbars=yes, width=' + 800 + ', height=' + 400);
+            } else {
+                call();
             }
-
-            call();
         });
     </script>
 {% endblock %}
