@@ -19,10 +19,11 @@ class MainController extends Controller
     /**
      * @Route("/~vrasquie/cas/connect", name="connect")
      */
-    public function connectAction()
+    public function connectAction(Request $request)
     {
         return $this->render('actions/connect.html.twig', array(
-            "connected" => $this->getUser() ? true : false
+            "connected" => $this->getUser() ? true : false,
+            "target" => $request->query->get("target")
         ));
     }
 

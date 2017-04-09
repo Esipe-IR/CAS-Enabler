@@ -20,7 +20,13 @@
 
             xml.onreadystatechange = function() {
                 if (xml.readyState == XMLHttpRequest.DONE && xml.status == 200 && window.top != window) {
-                    window.top.postMessage(xml.response, window.top.document.URL);
+                    var data = {
+                        type: "receiveToken",
+                        data: xml.response.token,
+                        target: "{{ target }}"
+                    };
+
+                    window.top.postMessage(data, window.top.document.URL);
                 }
             };
 
