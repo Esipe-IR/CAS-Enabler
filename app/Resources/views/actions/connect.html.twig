@@ -16,25 +16,15 @@
     <script>
         function call() {
             var xml = new XMLHttpRequest();
+            xml.responseType = "json";
 
             xml.onreadystatechange = function() {
-                if (xml.readyState != XMLHttpRequest.DONE ) {
-                    return;
-                }
-
-                if (xml.status == 200) {
-                    if (!window.top) return;
-
-                    var data = xml.responseText;
-                    try {
-                        data = JSON.parse(data);
-                    } catch (e) {}
-
-                    window.top.postMessage(data, window.top.document.URL);
+                if (xml.readyState == XMLHttpRequest.DONE && xml.status == 200 && window.top != window) {
+                    window.top.postMessage(xml.response, window.top.document.URL);
                 }
             };
 
-            xml.open("GET", "{{ path('token') }}", true);
+            xml.open("GET", "{{ path('api_token') }}", true);
             xml.send();
         }
 
@@ -45,9 +35,10 @@
         document.getElementById("connect").addEventListener("click", function () {
             if ("{{ connected }}") {
                 window.open("{{ path("auth") }}", "UPEM Connect", 'scrollbars=yes, width=' + 800 + ', height=' + 400);
-            } else {
-                call();
+                return;
             }
+
+            call();
         });
     </script>
 {% endblock %}

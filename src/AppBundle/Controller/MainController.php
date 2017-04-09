@@ -4,7 +4,6 @@ namespace AppBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 class MainController extends Controller
@@ -15,32 +14,6 @@ class MainController extends Controller
     public function authAction()
     {
         return $this->render('actions/close.html.twig');
-    }
-
-    /**
-     * @Route("/~vrasquie/cas/token", name="token")
-     */
-    public function tokenAction()
-    {
-        $casUser = $this->getUser();
-        
-        if (!$casUser) {
-            
-        }
-
-        $userService = $this->get("user.service");
-        $user = $userService->getUserByUid($casUser->getUsername());
-
-        $jwtService = $this->get("jwt.service");
-        $token = $jwtService->generate($user);
-
-        $response = array(
-            "type" => $token ? "success" : "error",
-            "token" => $token,
-            "code" => $token ? 0 : 2
-        );
-
-        return new JsonResponse($response);
     }
 
     /**
