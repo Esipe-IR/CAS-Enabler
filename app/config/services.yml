@@ -1,24 +1,21 @@
 parameters:
-  host: perso-etudiant.u-pem.fr
-  host.base_url: /~vrasquie/cas
   keys.dir: /../var/keys/
+  host: perso-etudiant.u-pem.fr
+
+  edt.host: https://edt.u-pem.fr/jsp/webapi
+  edt.project_id: 19
+  edt.login: visuedt
+  edt.password: visuedt
 
   ldap.host: ldap://vmldapetud1.u-pem.fr/
   ldap.fake.user:
-        homedirectory:
-          - /home/6ir1/test
-        givenname:
-          - test
-        sn:
-          - test
-        uid:
-          - test
-        mail:
-          - test@test.fr
-        supannetuid:
-          - 424242
-        accountstatus:
-          - true
+        homedirectory: /home/6ir1/test
+        givenname: test
+        sn: test
+        uid: test
+        mail: test@test.fr
+        supannetuid: 424242
+        accountstatus: true
   ldap.class:
       6ir1: ir1
 
@@ -32,8 +29,6 @@ parameters:
       options:
           env: "%kernel.environment%"
           default_user: "%cas.fake.user%"
-          host: "%host%"
-          base_url: "%host.base_url%"
       server_login_url: https://cas.u-pem.fr/login
       server_validation_url: https://cas.u-pem.fr/serviceValidate
       server_logout_url: https://cas.u-pem.fr/logout
@@ -71,3 +66,7 @@ services:
   cas.enabler.authenticator:
       class: AppBundle\Security\CasEnablerAuthenticator
       arguments: ["%cas.enabler.auth%"]
+
+  edt.service:
+      class: AppBundle\Service\EdtService
+      arguments: ["%edt.host%", "%edt.project_id%", "%edt.login%", "%edt.password%"]

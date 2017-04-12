@@ -44,7 +44,7 @@ class JWTService
             "iat" => time(),
             "nbf" => time(),
             "exp" => time() + 1000,
-            "usr" => base64_encode(json_encode($user->toArray()))
+            "uid" => $user->getUid()
         );
 
         try {
