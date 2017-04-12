@@ -48,7 +48,7 @@ class UserService
      * @param $uid
      * @return User
      */
-    public function getUserByUid($uid)
+    public function getUser($uid)
     {
         $user = new User();
         $ldapUser = $this->ldapService->getUser($uid);

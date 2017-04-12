@@ -55,10 +55,6 @@ class LdapService
             return null;
         }
 
-        foreach ($ldapResult[0] as $key=>$value) {
-            $ldapResult[0][$key] = $value[0];
-        }
-
         return $ldapResult[0];
     }
 

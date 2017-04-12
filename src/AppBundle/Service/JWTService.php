@@ -30,11 +30,11 @@ class JWTService
      * @param User $user
      * @return null|string
      */
-    public function generate(User $user)
+    public function generate($uid)
     {
         $privateKey = $this->rsakeyService->getPrivateKey();
 
-        if (!$privateKey) {
+        if (!$privateKey || !$uid) {
             return null;
         }
         
@@ -44,7 +44,7 @@ class JWTService
             "iat" => time(),
             "nbf" => time(),
             "exp" => time() + 1000,
-            "uid" => $user->getUid()
+            "uid" => $uid
         );
 
         try {

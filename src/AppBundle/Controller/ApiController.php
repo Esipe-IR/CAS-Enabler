@@ -14,23 +14,21 @@ class ApiController extends Controller
      */
     public function tokenAction()
     {
+        $responseService = $this->get("response.service");
         $casUser = $this->getUser();
 
-        if (!$casUser) {}
-
-        $userService = $this->get("user.service");
-        $user = $userService->getUserByUid($casUser->getUsername());
+        if (!$casUser) {
+            return $responseService->sendError(1);
+        }
 
         $jwtService = $this->get("jwt.service");
-        $token = $jwtService->generate($user);
+        $token = $jwtService->generate($casUser->getUsername());
 
-        $response = array(
-            "type" => $token ? "success" : "error",
-            "token" => $token,
-            "code" => $token ? 0 : 2
-        );
+        if (!$token) {
+            return $responseService->sendError(2);
+        }
 
-        return new JsonResponse($response);
+        return $responseService->sendSuccess($token);
     }
 
     /**
@@ -47,9 +45,9 @@ class ApiController extends Controller
         }
         
         $userService = $this->get("user.service");
-        $user = $userService->getUserByUid($jwt->uid);
+        $user = $userService->getUser($jwt->uid);
 
-        return new JsonResponse($user->toArray());
+        return $responseService->sendSuccess($user->toArray());
     }
 
     /**
@@ -68,7 +66,7 @@ class ApiController extends Controller
         $ldapService = $this->get("ldap.service");
         $ldapUser = $ldapService->getUser($jwt->uid);
 
-        return new JsonResponse($ldapUser);
+        return $responseService->sendSuccess($ldapUser);
     }
 
     /**
@@ -76,10 +74,11 @@ class ApiController extends Controller
      */
     public function edtRawAction(Request $request)
     {
+        $responseService = $this->get("response.service");
         $edtService = $this->get("edt.service");
         $xml = $edtService->getRaw($request->query);
 
-        return new JsonResponse($xml);
+        return $responseService->sendSuccess($xml);
     }
 
     /**
@@ -87,12 +86,13 @@ class ApiController extends Controller
      */
     public function edtResourcesAction(Request $request)
     {
+        $responseService = $this->get("response.service");
         $edtService = $this->get("edt.service");
         $xml = $edtService->getResources(
             $request->query->get("detail")
         );
 
-        return new JsonResponse($xml);
+        return $responseService->sendSuccess($xml);
     }
 
     /**
@@ -101,10 +101,11 @@ class ApiController extends Controller
     public function edtActivitiesAction(Request $request, $resources)
     {
         //1813,1806,1812,1811,1807,1640,5314
+        $responseService = $this->get("response.service");
         $edtService = $this->get("edt.service");
         $xml = $edtService->getActivities($resources, $request->query->get("detail"));
 
-        return new JsonResponse($xml);
+        return $responseService->sendSuccess($xml);
     }
 
     /**
@@ -112,6 +113,7 @@ class ApiController extends Controller
      */
     public function edtEventsAction(Request $request, $resources)
     {
+        $responseService = $this->get("response.service");
         $edtService = $this->get("edt.service");
         $xml = $edtService->getEvents(
             $resources,
@@ -119,6 +121,6 @@ class ApiController extends Controller
             $request->query->get("detail")
         );
 
-        return new JsonResponse($xml);
+        return $responseService->sendSuccess($xml);
     }
 }
