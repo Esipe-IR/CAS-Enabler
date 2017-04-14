@@ -2,71 +2,81 @@ parameters:
   keys.dir: /../var/keys/
   host: perso-etudiant.u-pem.fr
 
-  edt.host: https://edt.u-pem.fr/jsp/webapi
-  edt.project_id: 19
-  edt.login: visuedt
-  edt.password: visuedt
+  edt.config:
+    host: https://edt.u-pem.fr/jsp/webapi
+    project_id: 19
+    login: visuedt
+    password: visuedt
+    resources_mapping:
+      ir1: 1640
 
   ldap.host: ldap://vmldapetud1.u-pem.fr/
-  ldap.fake.user:
-        homedirectory: /home/6ir1/test
-        givenname: test
-        sn: test
-        uid: test
-        mail: test@test.fr
-        supannetuid: 424242
-        accountstatus: true
-  ldap.class:
-      6ir1: ir1
+  ldap.fake_user:
+    homedirectory:
+      - /home/6ir1/test
+    givenname:
+      - test
+    sn:
+      - test
+    uid:
+      - test
+    mail:
+      - test@test.fr
+    supannetuid:
+      - 424242
+    accountstatus:
+      - true
+  ldap.class_mapping:
+    6ir1: ir1
 
-  cas.fake.user:
-      user: test
+  cas.fake_user:
+    user: test
 
   cas.enabler.auth:
-      username_attribute: user
-      query_service_parameter: service
-      query_ticket_parameter: ticket
-      options:
-          env: "%kernel.environment%"
-          default_user: "%cas.fake.user%"
-      server_login_url: https://cas.u-pem.fr/login
-      server_validation_url: https://cas.u-pem.fr/serviceValidate
-      server_logout_url: https://cas.u-pem.fr/logout
-      xml_namespace: cas
+    username_attribute: user
+    query_service_parameter: service
+    query_ticket_parameter: ticket
+    options:
+      env: "%kernel.environment%"
+      default_user: "%cas.fake_user%"
+    server_login_url: https://cas.u-pem.fr/login
+    server_validation_url: https://cas.u-pem.fr/serviceValidate
+    server_logout_url: https://cas.u-pem.fr/logout
+    xml_namespace: cas
 
-  error.mapping:
-      0: ~
-      1: Not connected
-      2: Token fatal error
-      3: Undefined token
-      4: Not valid token
-      5: Unallowed token
+  error_mapping:
+    0: ~
+    1: Not connected
+    2: Token fatal error
+    3: Undefined token
+    4: Not valid token
+    5: Unallowed token
 
 services:
   ldap.service:
-      class: AppBundle\Service\LdapService
-      arguments: ["%ldap.host%", "%kernel.environment%", "%ldap.fake.user%"]
+    class: AppBundle\Service\LdapService
+    arguments: ["%ldap.host%", "%kernel.environment%", "%ldap.fake_user%"]
   
   response.service:
-      class: AppBundle\Service\ResponseService
-      arguments: ["%error.mapping%"]
+    class: AppBundle\Service\ResponseService
+    arguments: ["%error_mapping%"]
   
   rsakey.service:
-      class: AppBundle\Service\RSAKeyService
-      arguments: ["%kernel.root_dir%", "%keys.dir%", "%master.passphrase%"]
+    class: AppBundle\Service\RSAKeyService
+    arguments: ["%kernel.root_dir%", "%keys.dir%", "%master.passphrase%"]
 
   jwt.service:
-      class: AppBundle\Service\JWTService
-      arguments: ["@rsakey.service", "%host%"]
+    class: AppBundle\Service\JWTService
+    arguments: ["@rsakey.service", "%host%"]
 
   user.service:
-      class: AppBundle\Service\UserService
-      arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%ldap.class%"]
-
-  cas.enabler.authenticator:
-      class: AppBundle\Security\CasEnablerAuthenticator
-      arguments: ["%cas.enabler.auth%"]
+    class: AppBundle\Service\UserService
+    arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%ldap.class_mapping%"]
 
   edt.service:
-      class: AppBundle\Service\EdtService
-      arguments: ["%edt.host%", "%edt.project_id%", "%edt.login%", "%edt.password%"]
+    class: AppBundle\Service\EdtService
+    arguments: ["%edt.config%"]
+
+  cas.enabler.authenticator:
+    class: AppBundle\Security\CasEnablerAuthenticator
+    arguments: ["%cas.enabler.auth%"]

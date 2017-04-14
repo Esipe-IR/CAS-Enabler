@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 class MainController extends Controller
 {
     /**
-     * @Route("/~vrasquie/cas/auth", name="auth")
+     * @Route("/~vrasquie/u/auth", name="auth")
      */
     public function authAction()
     {
@@ -17,12 +17,11 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/cas/connect", name="connect")
+     * @Route("/~vrasquie/u/connect", name="connect")
      */
     public function connectAction(Request $request)
     {
         return $this->render('actions/connect.html.twig', array(
-            "connected" => $this->getUser() ? true : false,
             "target" => $request->query->get("target")
         ));
     }

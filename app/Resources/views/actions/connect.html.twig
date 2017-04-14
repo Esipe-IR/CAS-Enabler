@@ -1,14 +1,8 @@
 {% extends 'base.iframe.html.twig' %}
 
 {% block body %}
-    <button id="connect" style="
-        background: #EB5B0C;
-        padding: 10px 15px;
-        color: white;
-        border: none;
-        border-radius: 2px;
-        cursor: pointer;">
-        UPEM Connect
+    <button id="connect">
+        Log in with U-PEM
     </button>
 {% endblock %}
 
@@ -20,13 +14,7 @@
 
             xml.onreadystatechange = function() {
                 if (xml.readyState == XMLHttpRequest.DONE && xml.status == 200 && window.top != window) {
-                    var data = {
-                        type: "receiveToken",
-                        data: xml.response.token,
-                        target: "{{ target }}"
-                    };
-
-                    window.top.postMessage(data, window.top.document.URL);
+                    window.top.postMessage(xml.response, window.top.document.URL);
                 }
             };
 
@@ -39,12 +27,15 @@
         });
 
         document.getElementById("connect").addEventListener("click", function () {
-            if ("{{ connected }}") {
-                window.open("{{ path("auth") }}", "UPEM Connect", 'scrollbars=yes, width=' + 800 + ', height=' + 400);
-                return;
-            }
-
-            call();
+            {% if app.user %}
+                call();
+            {% else %}
+                window.open(
+                    "{{ path("auth") }}",
+                    "UPEM Connect",
+                    'scrollbars=yes, width=' + 800 + ', height=' + 400
+                );
+            {% endif %}
         });
     </script>
 {% endblock %}

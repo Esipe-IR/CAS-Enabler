@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <title>{% block title %}UPEM Connect{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    <style>
+        html, body, div {
+            margin: 0;
+            padding: 0;
+        }
+
+        #connect {
+            background: #EB5B0C;
+            padding: 10px 15px;
+            color: white;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 {% block body %}{% endblock %}

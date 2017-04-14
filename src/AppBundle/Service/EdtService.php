@@ -11,13 +11,15 @@ class EdtService
     private $projectId;
     private $login;
     private $password;
+    private $resourcesMapping;
 
-    public function __construct($host, $projectId, $login, $password)
+    public function __construct($config)
     {
-        $this->host = $host;
-        $this->projectId = $projectId;
-        $this->login = $login;
-        $this->password = $password;
+        $this->host = $config["host"];
+        $this->projectId = $config["projectId"];
+        $this->login = $config["login"];
+        $this->password = $config["password"];
+        $this->resourcesMapping = $config["resourcesMapping"];
     }
     
     public function raw(ParameterBag $query)

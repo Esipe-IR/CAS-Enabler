@@ -4,114 +4,143 @@ namespace AppBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 class ApiController extends Controller
 {
     /**
-     * @Route("/~vrasquie/cas/api/token", name="api_token")
+     * @Route("/~vrasquie/u/api/token", name="api_token")
      */
     public function tokenAction()
     {
+        $type = "receiveToken";
         $responseService = $this->get("response.service");
         $casUser = $this->getUser();
 
         if (!$casUser) {
-            return $responseService->sendError(1);
+            return $responseService->sendError($type, 1);
         }
 
         $jwtService = $this->get("jwt.service");
         $token = $jwtService->generate($casUser->getUsername());
 
         if (!$token) {
-            return $responseService->sendError(2);
+            return $responseService->sendError($type, 2);
         }
 
-        return $responseService->sendSuccess($token);
+        return $responseService->sendSuccess($type, $token);
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/me", name="api_me")
+     * @Route("/~vrasquie/u/api/me", name="api_me")
      */
     public function meAction(Request $request)
     {
+        $type = "receiveUser";
         $responseService = $this->get("response.service");
         $jwtService = $this->get("jwt.service");
         $jwt = $jwtService->decode($request->headers->get("token"));
 
         if (!$jwt) {
-            return $responseService->sendError(4);
+            $r = $responseService->sendError($type, 4);
+            $r->headers->set("Access-Control-Allow-Origin", "*");
+
+            return $r;
         }
         
         $userService = $this->get("user.service");
         $user = $userService->getUser($jwt->uid);
 
-        return $responseService->sendSuccess($user->toArray());
+        $r = $responseService->sendSuccess($type, $user->toArray());
+        $r->headers->set("Access-Control-Allow-Origin", "*");
+
+        return $r;
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/ldap/me", name="api_ldap_me")
+     * @Route("/~vrasquie/u/api/me/ldap", name="api_ldap_me")
      */
     public function ldapMeAction(Request $request)
     {
+        $type = "receiveLdapUser";
         $responseService = $this->get("response.service");
         $jwtService = $this->get("jwt.service");
         $jwt = $jwtService->decode($request->headers->get("token"));
 
         if (!$jwt) {
-            return $responseService->sendError(4);
+            $r = $responseService->sendError($type, 4);
+            $r->headers->set("Access-Control-Allow-Origin", "*");
+
+            return $r;
         }
 
         $ldapService = $this->get("ldap.service");
         $ldapUser = $ldapService->getUser($jwt->uid);
 
-        return $responseService->sendSuccess($ldapUser);
+        $r = $responseService->sendSuccess($type, $ldapUser);
+        $r->headers->set("Access-Control-Allow-Origin", "*");
+
+        return $r;
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/edt/raw", name="api_edt_raw")
+     * @Route("/~vrasquie/u/api/calendar/raw", name="api_edt_raw")
      */
     public function edtRawAction(Request $request)
     {
+        $type = "receiveCalendarRaw";
         $responseService = $this->get("response.service");
         $edtService = $this->get("edt.service");
         $xml = $edtService->getRaw($request->query);
 
-        return $responseService->sendSuccess($xml);
+        $r = $responseService->sendSuccess($type, $xml);
+        $r->headers->set("Access-Control-Allow-Origin", "*");
+
+        return $r;
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/edt/resources", name="api_edt_resources")
+     * @Route("/~vrasquie/u/api/calendar/resources", name="api_edt_resources")
      */
     public function edtResourcesAction(Request $request)
     {
+        $type = "receiveCalendarResources";
         $responseService = $this->get("response.service");
         $edtService = $this->get("edt.service");
         $xml = $edtService->getResources(
             $request->query->get("detail")
         );
 
-        return $responseService->sendSuccess($xml);
+        $r = $responseService->sendSuccess($type, $xml);
+        $r->headers->set("Access-Control-Allow-Origin", "*");
+
+        return $r;
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/edt/activities/{resources}", name="api_edt_activities")
+     * @Route("/~vrasquie/u/api/calendar/activities/{resources}", name="api_edt_activities")
      */
     public function edtActivitiesAction(Request $request, $resources)
     {
         //1813,1806,1812,1811,1807,1640,5314
+        $type = "receiveCalendarActivities";
         $responseService = $this->get("response.service");
         $edtService = $this->get("edt.service");
         $xml = $edtService->getActivities($resources, $request->query->get("detail"));
 
-        return $responseService->sendSuccess($xml);
+        $r = $responseService->sendSuccess($type, $xml);
+        $r->headers->set("Access-Control-Allow-Origin", "*");
+
+        return $r;
     }
 
     /**
-     * @Route("/~vrasquie/cas/api/edt/events/{resources}", name="api_edt_events")
+     * @Route("/~vrasquie/u/api/calendar/events/{resources}", name="api_edt_events")
      */
     public function edtEventsAction(Request $request, $resources)
     {
+        $type = "receiveCalendarResources";
         $responseService = $this->get("response.service");
         $edtService = $this->get("edt.service");
         $xml = $edtService->getEvents(
@@ -120,6 +149,9 @@ class ApiController extends Controller
             $request->query->get("detail")
         );
 
-        return $responseService->sendSuccess($xml);
+        $r = $responseService->sendSuccess($type, $xml);
+        $r->headers->set("Access-Control-Allow-Origin", "*");
+
+        return $r;
     }
 }
