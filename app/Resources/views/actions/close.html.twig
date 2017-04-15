@@ -1,0 +1,11 @@
+{% extends 'base.iframe.html.twig' %}
+
+{% block body %}
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        window.opener.postMessage(null, window.top.document.URL);
+        window.close();
+    </script>
+{% endblock %}

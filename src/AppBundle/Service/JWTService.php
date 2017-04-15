@@ -2,7 +2,6 @@
 
 namespace AppBundle\Service;
 
-use AppBundle\Entity\Service;
 use AppBundle\Entity\User;
 use \Firebase\JWT\JWT;
 
@@ -31,17 +30,11 @@ class JWTService
      * @param User $user
      * @return null|string
      */
-    public function generate(User $user)
+    public function generate($uid)
     {
         $privateKey = $this->rsakeyService->getPrivateKey();
 
-        if (!$privateKey) {
-            return null;
-        }
-
-        $success = openssl_private_encrypt($user->getUid(), $uid, $privateKey);
-
-        if (!$success) {
+        if (!$privateKey || !$uid) {
             return null;
         }
         
@@ -51,7 +44,7 @@ class JWTService
             "iat" => time(),
             "nbf" => time(),
             "exp" => time() + 1000,
-            "uid" => base64_encode($uid)
+            "uid" => $uid
         );
 
         try {
@@ -95,45 +88,5 @@ class JWTService
         }
 
         return $jwt;
-    }
-
-    /**
-     * Decode uid contain in Json Web Token
-     * @param $uid
-     * @return null|string
-     */
-    public function decodeUid($uid)
-    {
-        $publicKey = $this->rsakeyService->getPublicKey();
-        $success = openssl_public_decrypt(base64_decode($uid), $usr, $publicKey);
-
-        if (!$success) {
-            return null;
-        }
-
-        return $usr;
-    }
-
-    /**
-     * @param Service $service
-     * @param User $user
-     * @return null|string
-     */
-    public function encodeUser(Service $service, User $user)
-    {
-        $publicKey = $this->rsakeyService->getServicePublicKey($service);
-
-        if (!$publicKey) {
-            return null;
-        }
-
-        $json = json_encode($user->toArray());
-        $success = openssl_public_encrypt($json, $usr, $publicKey);
-
-        if (!$success) {
-            return null;
-        }
-
-        return base64_encode($usr);
     }
 }

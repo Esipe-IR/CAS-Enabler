@@ -64,31 +64,31 @@ class LdapService
      */
     public function isValid(array $ldapUser)
     {
-        if (!isset($ldapUser["givenname"]) || !isset($ldapUser["givenname"][0])) {
+        if (!isset($ldapUser["givenname"])) {
             return false;
         }
         
-        if (!isset($ldapUser["sn"]) || !isset($ldapUser["sn"][0])) {
+        if (!isset($ldapUser["sn"])) {
             return false;
         }
         
-        if (!isset($ldapUser["uid"]) || !isset($ldapUser["uid"][0])) {
+        if (!isset($ldapUser["uid"])) {
             return false;
         }
 
-        if (!isset($ldapUser["mail"]) || !isset($ldapUser["mail"][0])) {
+        if (!isset($ldapUser["mail"])) {
             return false;
         }
 
-        if (!isset($ldapUser["supannetuid"]) || !isset($ldapUser["supannetuid"][0])) {
+        if (!isset($ldapUser["supannetuid"])) {
             return false;
         }
 
-        if (!isset($ldapUser["homedirectory"]) || !isset($ldapUser["homedirectory"][0])) {
+        if (!isset($ldapUser["homedirectory"])) {
             return false;
         }
 
-        if (!isset($ldapUser["accountstatus"]) || !isset($ldapUser["accountstatus"][0])) {
+        if (!isset($ldapUser["accountstatus"])) {
             return false;
         }
         

@@ -22,43 +22,54 @@ class ResponseService
     }
 
     /**
-     * @param bool $status
+     * @param string $type
      * @param int $code
      * @param string $data
      * @param string $error
      * @return JsonResponse
      * @throws \Exception
      */
-    public function send($status, $code, $data, $error)
+    public function send($type, $code, $data, $error, $expose)
     {
         $response = new JsonResponse();
         $response->setStatusCode(200);
         $response->setData(array(
-            'status'    => $status,
+            'type'      => $type,
             'code'      => $code,
             'data'      => $data,
-            'error'     => $error
+            'error'     => $error,
+            'scope'     => "UPEM-Api"
         ));
+
+        if ($expose) {
+            $response->headers->set("Access-Control-Allow-Origin", "*");
+            $response->headers->set("Access-Control-Allow-Headers", "Token");
+            $response->headers->set("Content-Type", "application/json;charset=UTF-8");
+        }
 
         return $response;
     }
 
     /**
+     * @param string $type
      * @param int $code
+     * @param bool $expose
      * @return JsonResponse
      */
-    public function sendError($code)
+    public function sendError($type, $code, $expose)
     {
         $error = $this->errorMapping[$code];
-        return $this->send(false, $code, null, $error);
+        return $this->send($type, $code, null, $error, $expose);
     }
 
     /**
+     * @param string $type
      * @param string $data
+     * @param bool $expose
      * @return JsonResponse
      */
-    public function sendSuccess($data)
+    public function sendSuccess($type, $data, $expose)
     {
-        return $this->send(true, 0, $data, null);
+        return $this->send($type, 0, $data, null, $expose);
     }
 }

@@ -16,4 +16,4 @@ security:
                     - cas.enabler.authenticator
 
     access_control:
-        - { path: ^/~vrasquie/cas/auth, roles: ROLE_USER }
+        - { path: ^/~vrasquie/core/auth, roles: ROLE_USER }

@@ -2,58 +2,42 @@
 
 namespace AppBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-
 /**
  * User
- *
- * @ORM\Table(name="user_app")
- * @ORM\Entity(repositoryClass="AppBundle\Repository\UserRepository")
  */
 class User
 {
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    private $uid;
     private $name;
     private $lastname;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="uid", type="string", length=255)
-     */
-    private $uid;
     private $email;
     private $etuId;
     private $class;
     private $status;
+    private $homeDir;
 
     /**
-     * Many Users have Many Services.
-     * @ORM\ManyToMany(targetEntity="Service", mappedBy="users")
+     * Set uid
+     *
+     * @param string $uid
+     *
+     * @return User
      */
-    private $services;
-
-    public function __construct()
+    public function setUid($uid)
     {
-        $this->services = new ArrayCollection();
+        $this->uid = $uid;
+
+        return $this;
     }
 
     /**
-     * Get id
+     * Get uid
      *
-     * @return int
+     * @return string
      */
-    public function getId()
+    public function getUid()
     {
-        return $this->id;
+        return $this->uid;
     }
 
     /**
@@ -102,30 +86,6 @@ class User
     public function getLastname()
     {
         return $this->lastname;
-    }
-
-    /**
-     * Set uid
-     *
-     * @param string $uid
-     *
-     * @return User
-     */
-    public function setUid($uid)
-    {
-        $this->uid = $uid;
-
-        return $this;
-    }
-
-    /**
-     * Get uid
-     *
-     * @return string
-     */
-    public function getUid()
-    {
-        return $this->uid;
     }
 
     /**
@@ -224,50 +184,41 @@ class User
         return $this->status;
     }
 
-    public function toArray()
-    {
-        return array(
-            "name" => $this->getName(),
-            "lastname" => $this->getLastname(),
-            "uid" => $this->getUid(),
-            "email" => $this->getEmail(),
-            "etu_id" => $this->getEtuId(),
-            "class" => $this->getClass(),
-            "status" => $this->getStatus()
-        );
-    }
-
     /**
-     * Add service
+     * Set homeDir
      *
-     * @param \AppBundle\Entity\Service $service
+     * @param string $homeDir
      *
      * @return User
      */
-    public function addService(\AppBundle\Entity\Service $service)
+    public function setHomeDir($homeDir)
     {
-        $this->services[] = $service;
+        $this->homeDir = $homeDir;
 
         return $this;
     }
 
     /**
-     * Remove service
+     * Get homeDir
      *
-     * @param \AppBundle\Entity\Service $service
+     * @return string
      */
-    public function removeService(\AppBundle\Entity\Service $service)
+    public function getHomeDir()
     {
-        $this->services->removeElement($service);
+        return $this->homeDir;
     }
 
-    /**
-     * Get services
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getServices()
+    public function toArray()
     {
-        return $this->services;
+        return array(
+            "uid" => $this->getUid(),
+            "name" => $this->getName(),
+            "lastname" => $this->getLastname(),
+            "email" => $this->getEmail(),
+            "etu_id" => $this->getEtuId(),
+            "class" => $this->getClass(),
+            "status" => $this->getStatus(),
+            "home_dir" => $this->getHomeDir()
+        );
     }
 }

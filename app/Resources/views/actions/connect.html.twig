@@ -1,30 +1,41 @@
 {% extends 'base.iframe.html.twig' %}
 
 {% block body %}
+    <button id="connect">
+        Log in with U-PEM
+    </button>
 {% endblock %}
 
 {% block javascripts %}
     <script>
-        var $chan = Channel.build({
-            window: window.opener,
-            origin: "*",
-            scope: "CAS.Scope"
+        function call() {
+            var xml = new XMLHttpRequest();
+            xml.responseType = "json";
+
+            xml.onreadystatechange = function() {
+                if (xml.readyState == XMLHttpRequest.DONE && xml.status == 200 && window.top != window) {
+                    window.top.postMessage(xml.response, "*");
+                }
+            };
+
+            xml.open("GET", "{{ path('api_token') }}", true);
+            xml.send();
+        }
+
+        window.addEventListener("message", function() {
+            call();
         });
 
-        {% set method = "error" %}
-        {% set params = code %}
-
-        {% if not code %}
-            {% set method = "connect" %}
-            {% set params = token %}
-        {% endif %}
-
-        $chan.call({
-            method: "{{ method }}",
-            params: "{{ params }}",
-            success: function (r) {
-                if (r) window.close();
-            }
+        document.getElementById("connect").addEventListener("click", function () {
+            {% if app.user %}
+                call();
+            {% else %}
+                window.open(
+                    "{{ path("auth") }}",
+                    "UPEM Connect",
+                    'scrollbars=yes, width=' + 800 + ', height=' + 400
+                );
+            {% endif %}
         });
     </script>
 {% endblock %}
