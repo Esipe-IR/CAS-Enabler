@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 class MainController extends Controller
 {
     /**
-     * @Route("/~vrasquie/u/auth", name="auth")
+     * @Route("/~vrasquie/core/auth", name="auth")
      */
     public function authAction()
     {
@@ -17,7 +17,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/u/connect", name="connect")
+     * @Route("/~vrasquie/core/connect", name="connect")
      */
     public function connectAction(Request $request)
     {

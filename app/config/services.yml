@@ -1,8 +1,10 @@
 parameters:
+  env: prod
+
   keys.dir: /../var/keys/
   host: perso-etudiant.u-pem.fr
 
-  edt.config:
+  calendar.config:
     host: https://edt.u-pem.fr/jsp/webapi
     project_id: 19
     login: visuedt
@@ -37,7 +39,7 @@ parameters:
     query_service_parameter: service
     query_ticket_parameter: ticket
     options:
-      env: "%kernel.environment%"
+      env: "%env%"
       default_user: "%cas.fake_user%"
     server_login_url: https://cas.u-pem.fr/login
     server_validation_url: https://cas.u-pem.fr/serviceValidate
@@ -55,7 +57,7 @@ parameters:
 services:
   ldap.service:
     class: AppBundle\Service\LdapService
-    arguments: ["%ldap.host%", "%kernel.environment%", "%ldap.fake_user%"]
+    arguments: ["%ldap.host%", "%env%", "%ldap.fake_user%"]
   
   response.service:
     class: AppBundle\Service\ResponseService
@@ -73,9 +75,9 @@ services:
     class: AppBundle\Service\UserService
     arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%ldap.class_mapping%"]
 
-  edt.service:
-    class: AppBundle\Service\EdtService
-    arguments: ["%edt.config%"]
+  calendar.service:
+    class: AppBundle\Service\CalendarService
+    arguments: ["%calendar.config%"]
 
   cas.enabler.authenticator:
     class: AppBundle\Security\CasEnablerAuthenticator

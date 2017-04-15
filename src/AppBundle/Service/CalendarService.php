@@ -5,7 +5,7 @@ namespace AppBundle\Service;
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
-class EdtService
+class CalendarService
 {
     private $host;
     private $projectId;
@@ -16,10 +16,15 @@ class EdtService
     public function __construct($config)
     {
         $this->host = $config["host"];
-        $this->projectId = $config["projectId"];
+        $this->projectId = $config["project_id"];
         $this->login = $config["login"];
         $this->password = $config["password"];
-        $this->resourcesMapping = $config["resourcesMapping"];
+        $this->resourcesMapping = $config["resources_mapping"];
+    }
+
+    public function getResourcesByClass($class)
+    {
+        return $this->resourcesMapping[$class];
     }
     
     public function raw(ParameterBag $query)
@@ -65,19 +70,29 @@ class EdtService
         return new \SimpleXMLElement($response->getBody());
     }
 
-    public function getEvents($resources, $date, $detail = 8)
+    /**
+     * @param $resources
+     * @param array $request
+     * @return \SimpleXMLElement
+     */
+    public function getEvents($resources, array $request)
     {
+        $query = array_merge(array(
+            "function" => "getEvents",
+            "projectId" => $this->projectId,
+            "resources" => $resources,
+            "detail" => 7,
+            "login" => $this->login,
+            "password" => $this->password
+        ), $request);
+
+        if (isset($query["detail"]) && $query["detail"] > 8) {
+            $query["detail"] = 8;
+        }
+
         $client = new Client();
         $response = $client->get($this->host, array(
-            "query" => array(
-                "function" => "getEvents",
-                "projectId" => $this->projectId,
-                "resources" => $resources,
-                "date" => $date,
-                "detail" => $detail ? $detail : 8,
-                "login" => $this->login,
-                "password" => $this->password
-            )
+            "query" => $query
         ));
 
         return new \SimpleXMLElement($response->getBody());
