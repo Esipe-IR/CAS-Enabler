@@ -36,9 +36,10 @@ class ResponseService
         $response->setData(array(
             'type'      => $type,
             'code'      => $code,
+            'scope'     => "UPEM-Api",
+            'src'       => "CORE",
             'data'      => $data,
-            'error'     => $error,
-            'scope'     => "UPEM-Api"
+            'error'     => $error
         ));
 
         if ($expose) {
