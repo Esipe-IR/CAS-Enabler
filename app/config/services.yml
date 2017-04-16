@@ -1,5 +1,5 @@
 parameters:
-  env: prod
+  env: dev
 
   keys.dir: /../var/keys/
   host: perso-etudiant.u-pem.fr

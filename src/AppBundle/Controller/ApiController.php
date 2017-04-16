@@ -13,7 +13,7 @@ class ApiController extends Controller
      */
     public function tokenAction()
     {
-        $type = "receiveToken";
+        $type = "receiveConnect";
         $responseService = $this->get("response.service");
         $casUser = $this->getUser();
 
