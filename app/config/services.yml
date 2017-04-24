@@ -77,7 +77,11 @@ services:
 
   calendar.service:
     class: AppBundle\Service\CalendarService
-    arguments: ["%calendar.config%"]
+    arguments: ["%calendar.config%", "%kernel.root_dir%"]
+
+  graphql.service:
+    class: AppBundle\Service\GraphQLService
+    arguments: ["@calendar.service", "@jwt.service", "@user.service"]
 
   cas.enabler.authenticator:
     class: AppBundle\Security\CasEnablerAuthenticator
