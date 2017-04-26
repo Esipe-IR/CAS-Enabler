@@ -31,45 +31,67 @@ class CalendarService
 
         if (!$fs->exists($filename)) {
             $xml = $this->getADEResources();
-            
             $json = json_encode($xml);
             $arr = json_decode($json, true);
 
-            var_dump(3);die;
+            if (!isset($arr["resource"])) {
+                throw new \Exception("ADE error");
+            }
             
             $array = array();
+
             foreach ($arr["resource"] as $k=>$r) {
                 $array[$r["@attributes"]["id"]] = $r["@attributes"];
+                $array[$r["@attributes"]["id"]]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
             }
 
             ksort($array);
-            
             $json = json_encode($array);
             file_put_contents($filename, $json);
-        } else {
-            $json = file_get_contents($filename);
-            $array = json_decode($json, true);
+
+            return $array;
         }
-        
-        return $array;
+
+        $json = file_get_contents($filename);
+
+        return json_decode($json, true);
+    }
+    
+    private function getADEResources()
+    {
+        $client = new Client();
+
+        $response = $client->get($this->host, array(
+            "query" => array(
+                "function" => "getResources",
+                "projectId" => $this->projectId,
+                "detail" => 7,
+                "login" => $this->login,
+                "password" => $this->password
+            )
+        ));
+
+        return new \SimpleXMLElement($response->getBody());
     }
 
-    public function getEvents($resources, array $request)
+    public function getEvents(array $request)
     {
-        $xml = $this->getADEEvents($resources, $request);
+        $xml = $this->getADEEvents($request);
         $json = json_encode($xml);
         $arr = json_decode($json, true);
 
         if (!isset($arr["event"])) {
-            throw new \Exception("An error occured with your request. Maybe a date problem ?");
+            throw new \Exception("ADE error");
         }
 
         $array = array();
 
         foreach ($arr["event"] as $k=>$r) {
-            $key = $r["@attributes"]["date"] . "-" . $r["@attributes"]["startHour"];
+            $key = $r["@attributes"]["startHour"] . "-" . $r["@attributes"]["date"];
 
             $array[$key] = $r["@attributes"];
+
+            $array[$key]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
 
             foreach ($r["resources"]["resource"] as $re) {
                 if ($re["@attributes"]["category"] == "trainee") {
@@ -91,58 +113,38 @@ class CalendarService
         return $array;
     }
     
-    private function getADEResources()
-    {
-        $client = new Client();
-        $response = $client->get($this->host, array(
-            "query" => array(
-                "function" => "getResources",
-                "projectId" => $this->projectId,
-                "detail" => 13,
-                "login" => $this->login,
-                "password" => $this->password
-            )
-        ));
-
-        return new \SimpleXMLElement($response->getBody());
-    }
-    
-    public function getActivities($resources, $detail = 17)
-    {
-        $client = new Client();
-        $response = $client->get($this->host, array(
-            "query" => array(
-                "function" => "getActivities",
-                "projectId" => $this->projectId,
-                "resources" => $resources,
-                "detail" => $detail ? $detail : 17,
-                "login" => $this->login,
-                "password" => $this->password
-            )
-        ));
-
-        return new \SimpleXMLElement($response->getBody());
-    }
-
-    /**
-     * @param $resources
-     * @param array $request
-     * @return \SimpleXMLElement
-     */
-    public function getADEEvents($resources, array $request)
+    public function getADEEvents(array $request)
     {
         $query = array_merge(array(
             "function" => "getEvents",
             "projectId" => $this->projectId,
-            "resources" => $resources,
             "detail" => 8,
             "login" => $this->login,
             "password" => $this->password
         ), $request);
 
         $client = new Client();
+
         $response = $client->get($this->host, array(
             "query" => $query
+        ));
+
+        return new \SimpleXMLElement($response->getBody());
+    }
+    
+    public function getADEActivities($resources)
+    {
+        $client = new Client();
+
+        $response = $client->get($this->host, array(
+            "query" => array(
+                "function" => "getActivities",
+                "projectId" => $this->projectId,
+                "resources" => $resources,
+                "detail" => 17,
+                "login" => $this->login,
+                "password" => $this->password
+            )
         ));
 
         return new \SimpleXMLElement($response->getBody());

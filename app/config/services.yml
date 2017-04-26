@@ -79,8 +79,8 @@ services:
     class: AppBundle\Service\CalendarService
     arguments: ["%calendar.config%", "%kernel.root_dir%"]
 
-  graphql.service:
-    class: AppBundle\Service\GraphQLService
+  query.type:
+    class: AppBundle\GraphQL\QueryType
     arguments: ["@calendar.service", "@jwt.service", "@user.service"]
 
   cas.enabler.authenticator:

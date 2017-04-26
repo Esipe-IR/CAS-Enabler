@@ -2,6 +2,9 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\GraphQL\CalendarType;
+use AppBundle\GraphQL\QueryType;
+use AppBundle\GraphQL\UserType;
 use GraphQL\GraphQL;
 use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
@@ -30,54 +33,54 @@ class MainController extends Controller
             "target" => $request->query->get("target")
         ));
     }
-
+    
     /**
-     * @Route("/graphql", name="graphql")
+     * @Route("/~vrasquie/core/token", name="token")
      */
-    public function graphqlAction(Request $request)
+    public function tokenAction()
     {
-        $graphqlService = $this->get("graphql.service");
+        $type = "rcv::token";
+        $responseService = $this->get("response.service");
+        $casUser = $this->getUser();
 
-        $queryType = new ObjectType([
-            "name" => "Query",
-            "fields" => [
-                "calendar" => array(
-                    "type" => $graphqlService->getCalendarType(),
-                    "resolve" => function() {
-                        return true;
-                    }
-                ),
-                "user" => array(
-                    "type" => $graphqlService->getUserType(),
-                    "resolve" => function($root) {
-                        $jwt = $this->get("jwt.service")->decode($root["token"]);
+        if (!$casUser) {
+            return $responseService->sendError($type, 1, false);
+        }
 
-                        if (!$jwt) {
-                            throw new \Exception("Invalid token");
-                        }
+        $jwtService = $this->get("jwt.service");
+        $token = $jwtService->generate($casUser->getUsername());
 
-                        return $this->get("user.service")->getUser($jwt->uid)->toArray();
-                    }
-                )
-            ],
-        ]);
+        if (!$token) {
+            return $responseService->sendError($type, 2, false);
+        }
 
-        $schema = new Schema([
-            "query" => $queryType
-        ]);
-
-        $json = json_decode($request->getContent(), true);
-        $query = isset($json["query"]) ? $json["query"] : null;
-        $root = array(
-            "token" => $request->headers->get("Authorization")
-        );
-        $var = isset($json["variables"]) ? $json["variables"] : null;
-
-        return new JsonResponse(GraphQL::execute($schema, $query, $root, null, $var));
+        return $responseService->sendSuccess($type, $token, false);
     }
 
     /**
-     * @Route("/graphql/explorer", name="graphql_explorer")
+     * @Route("/~vrasquie/core/graphql", name="graphql")
+     */
+    public function graphqlAction(Request $request)
+    {
+        $schema = new Schema([
+            "query" => $this->get("query.type")
+        ]);
+
+        $json = json_decode($request->getContent(), true);
+
+        $query = isset($json["query"]) ? $json["query"] : null;
+        $root = array("token" => $request->headers->get("Authorization"));
+        $var = isset($json["variables"]) ? $json["variables"] : null;
+
+        return new JsonResponse(GraphQL::execute($schema, $query, $root, null, $var), 200, array(
+            "Access-Control-Allow-Origin" => "*",
+            "Access-Control-Allow-Headers" => "Authorization",
+            "Content-Type" => "application/json;charset=UTF-8"
+        ));
+    }
+
+    /**
+     * @Route("/~vrasquie/core/graphql/explorer", name="graphql_explorer")
      */
     public function graphqlExplorerAction()
     {

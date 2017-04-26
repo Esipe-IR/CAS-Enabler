@@ -18,7 +18,7 @@
                 }
             };
 
-            xml.open("GET", "{{ path('api_token') }}", true);
+            xml.open("GET", "{{ path("token") }}", true);
             xml.send();
         }
 
