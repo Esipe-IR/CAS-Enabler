@@ -74,7 +74,7 @@ class MainController extends Controller
 
         return new JsonResponse(GraphQL::execute($schema, $query, $root, null, $var), 200, array(
             "Access-Control-Allow-Origin" => "*",
-            "Access-Control-Allow-Headers" => "Authorization",
+            "Access-Control-Allow-Headers" => "Content-Type, Authorization",
             "Content-Type" => "application/json;charset=UTF-8"
         ));
     }

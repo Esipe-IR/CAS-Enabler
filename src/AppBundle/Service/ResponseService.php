@@ -36,7 +36,7 @@ class ResponseService
         $response->setData(array(
             'type'      => $type,
             'code'      => $code,
-            'scope'     => "UPEM-Api",
+            'scope'     => "UPEM-Core",
             'src'       => "CORE",
             'data'      => $data,
             'error'     => $error

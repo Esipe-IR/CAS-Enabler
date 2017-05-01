@@ -87,7 +87,7 @@ class CalendarService
         $array = array();
 
         foreach ($arr["event"] as $k=>$r) {
-            $key = $r["@attributes"]["startHour"] . "-" . $r["@attributes"]["date"];
+            $key = $k . $r["@attributes"]["startHour"] . "-" . $r["@attributes"]["date"];
 
             $array[$key] = $r["@attributes"];
 
