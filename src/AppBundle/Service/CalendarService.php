@@ -85,31 +85,25 @@ class CalendarService
         }
 
         $array = array();
-
         foreach ($arr["event"] as $k=>$r) {
-            $key = $k . $r["@attributes"]["startHour"] . "-" . $r["@attributes"]["date"];
-
-            $array[$key] = $r["@attributes"];
-
-            $array[$key]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
+            $array[$k] = $r["@attributes"];
+            $array[$k]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
 
             foreach ($r["resources"]["resource"] as $re) {
                 if ($re["@attributes"]["category"] == "trainee") {
-                    $array[$key]["class"][] = $re["@attributes"]["name"];
+                    $array[$k]["class"][] = $re["@attributes"]["name"];
                 }
 
                 if ($re["@attributes"]["category"] == "instructor") {
-                    $array[$key]["instructor"] = $re["@attributes"]["name"];
+                    $array[$k]["instructor"] = $re["@attributes"]["name"];
                 }
 
                 if ($re["@attributes"]["category"] == "classroom") {
-                    $array[$key]["classroom"] = $re["@attributes"]["name"];
+                    $array[$k]["classroom"] = $re["@attributes"]["name"];
                 }
             }
         }
-
-        ksort($array);
-
+        
         return $array;
     }
     
