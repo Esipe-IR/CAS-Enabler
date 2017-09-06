@@ -2,90 +2,75 @@
 
 namespace AppBundle\Service;
 
-use GuzzleHttp\Client;
 use Symfony\Component\Filesystem\Filesystem;
 
 class CalendarService
 {
-    private $host;
-    private $projectId;
-    private $login;
-    private $password;
-    private $resourcesMapping;
+    private $adeService;
     private $rootDir;
 
-    public function __construct($config, $rootDir)
+    public function __construct(ADEService $adeService, $rootDir)
     {
-        $this->host = $config["host"];
-        $this->projectId = $config["project_id"];
-        $this->login = $config["login"];
-        $this->password = $config["password"];
-        $this->resourcesMapping = $config["resources_mapping"];
+        $this->adeService = $adeService;
         $this->rootDir = $rootDir;
     }
 
-    public function getResources()
+    public function getProjects()
     {
-        $fs = new Filesystem();
-        $filename = $this->rootDir . "/../var/api/resources-" . $this->projectId . ".json";
+        $projects = $this->adeService->getProjects();
 
-        if (!$fs->exists($filename)) {
-            $xml = $this->getADEResources();
-            $json = json_encode($xml);
-            $arr = json_decode($json, true);
-
-            if (!isset($arr["resource"])) {
-                throw new \Exception("ADE error");
-            }
-            
-            $array = array();
-
-            foreach ($arr["resource"] as $k=>$r) {
-                $array[$r["@attributes"]["id"]] = $r["@attributes"];
-                $array[$r["@attributes"]["id"]]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
-            }
-
-            ksort($array);
-            $json = json_encode($array);
-            file_put_contents($filename, $json);
-
-            return $array;
-        }
-
-        $json = file_get_contents($filename);
-
-        return json_decode($json, true);
-    }
-    
-    private function getADEResources()
-    {
-        $client = new Client();
-
-        $response = $client->get($this->host, array(
-            "query" => array(
-                "function" => "getResources",
-                "projectId" => $this->projectId,
-                "detail" => 7,
-                "login" => $this->login,
-                "password" => $this->password
-            )
-        ));
-
-        return new \SimpleXMLElement($response->getBody());
-    }
-
-    public function getEvents(array $request)
-    {
-        $xml = $this->getADEEvents($request);
-        $json = json_encode($xml);
-        $arr = json_decode($json, true);
-
-        if (!isset($arr["event"])) {
+        if (!isset($projects["project"])) {
             throw new \Exception("ADE error");
         }
 
         $array = array();
-        foreach ($arr["event"] as $k=>$r) {
+        foreach ($projects["project"] as $k => $r) {
+            $array[$k] = $r["@attributes"];
+        }
+
+        return $array;
+    }
+
+    public function getResources($projectId)
+    {
+        $fs = new Filesystem();
+        $filename = $this->rootDir . "/../var/api/resources-" . $projectId . ".json";
+
+        if ($fs->exists($filename)) {
+            $json = file_get_contents($filename);
+            return json_decode($json, true);   
+        }
+
+        $arr = $this->adeService->getResources($projectId);
+        
+        if (!isset($arr["resource"])) {
+            throw new \Exception("ADE error");
+        }
+        
+        $array = array();
+
+        foreach ($arr["resource"] as $k=>$r) {
+            $array[$r["@attributes"]["id"]] = $r["@attributes"];
+            $array[$r["@attributes"]["id"]]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
+        }
+
+        ksort($array);
+        $json = json_encode($array);
+        file_put_contents($filename, $json);
+
+        return $array;
+    }
+
+    public function getEvents($projectId, $resources, $date, $startDate, $endDate)
+    {
+        $events = $this->adeService->getEvents($projectId, $resources, $date, $startDate, $endDate);
+
+        if (!isset($events["event"])) {
+            throw new \Exception("ADE error");
+        }
+
+        $array = array();
+        foreach ($events["event"] as $k=>$r) {
             $array[$k] = $r["@attributes"];
             $array[$k]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
 
@@ -105,42 +90,5 @@ class CalendarService
         }
         
         return $array;
-    }
-    
-    public function getADEEvents(array $request)
-    {
-        $query = array_merge(array(
-            "function" => "getEvents",
-            "projectId" => $this->projectId,
-            "detail" => 8,
-            "login" => $this->login,
-            "password" => $this->password
-        ), $request);
-
-        $client = new Client();
-
-        $response = $client->get($this->host, array(
-            "query" => $query
-        ));
-
-        return new \SimpleXMLElement($response->getBody());
-    }
-    
-    public function getADEActivities($resources)
-    {
-        $client = new Client();
-
-        $response = $client->get($this->host, array(
-            "query" => array(
-                "function" => "getActivities",
-                "projectId" => $this->projectId,
-                "resources" => $resources,
-                "detail" => 17,
-                "login" => $this->login,
-                "password" => $this->password
-            )
-        ));
-
-        return new \SimpleXMLElement($response->getBody());
     }
 }

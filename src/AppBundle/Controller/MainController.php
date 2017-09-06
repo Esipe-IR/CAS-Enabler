@@ -17,25 +17,25 @@ use Symfony\Component\HttpFoundation\Request;
 class MainController extends Controller
 {
     /**
-     * @Route("/~vrasquie/core/auth", name="auth")
+     * @Route("/~vrasquie/api/auth", name="auth")
      */
     public function authAction()
     {
-        return $this->render('actions/close.html.twig');
+        return $this->render("actions/close.html.twig");
     }
 
     /**
-     * @Route("/~vrasquie/core/connect", name="connect")
+     * @Route("/~vrasquie/api/connect", name="connect")
      */
     public function connectAction(Request $request)
     {
-        return $this->render('actions/connect.html.twig', array(
+        return $this->render("actions/connect.html.twig", array(
             "target" => $request->query->get("target")
         ));
     }
     
     /**
-     * @Route("/~vrasquie/core/token", name="token")
+     * @Route("/~vrasquie/api/token", name="token")
      */
     public function tokenAction()
     {
@@ -58,7 +58,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/core/graphql", name="graphql")
+     * @Route("/~vrasquie/api/graphql", name="graphql")
      */
     public function graphqlAction(Request $request)
     {
@@ -80,7 +80,7 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/~vrasquie/core/graphql/explorer", name="graphql_explorer")
+     * @Route("/~vrasquie/api/graphql/explorer", name="graphql_explorer")
      */
     public function graphqlExplorerAction()
     {

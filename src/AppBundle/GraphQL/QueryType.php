@@ -23,40 +23,54 @@ class QueryType extends ObjectType
         $this->jwtService = $jwtService;
         $this->userService = $userService;
         
+        $p = new ProjectType();
         $r = new ResourceType();
         $a = new ActivityType();
         $e = new EventType();
+        $u = new UserType();
 
         $config = array(
             "name" => "Query",
             "fields" => array(
+                "projects" => array(
+                    "type" => Type::listOf($p),
+                    "resolve" => function() {
+                        return $this->calendarService->getProjects();
+                    }
+                ),
                 "resource" => array(
                     "type" => $r,
                     "args" => array(
+                        "projectId" => array(
+                            "type" => Type::nonNull(Type::int())
+                        ),
                         "id" => array(
                             "type" => Type::nonNull(Type::int())
                         )
                     ),
                     "resolve" => function($root, $args) {
-                        $arr = $this->calendarService->getResources();
+                        $arr = $this->calendarService->getResources($args["projectId"]);
+
                         return $arr[$args["id"]];
                     }
                 ),
                 "resources" => array(
                     "type" => Type::listOf($r),
-                    "resolve" => function() {
-                        return $this->calendarService->getResources();
-                    }
-                ),
-                "activities" => array(
-                    "type" => Type::listOf($a),
-                    "resolve" => function() {
-                        return true;
+                    "args" => array(
+                        "projectId" => array(
+                            "type" => Type::nonNull(Type::int())
+                        )
+                    ),
+                    "resolve" => function($root, $args) {
+                        return $this->calendarService->getResources($args["projectId"]);
                     }
                 ),
                 "events" => array(
                     "type" => Type::listOf($e),
                     "args" => array(
+                        "projectId" => array(
+                            "type" => Type::nonNull(Type::int())
+                        ),
                         "resources" => array(
                             "type" => Type::nonNull(Type::string())
                         ),
@@ -71,11 +85,39 @@ class QueryType extends ObjectType
                         )
                     ),
                     "resolve" => function($root, $args) {
-                        return $this->calendarService->getEvents($args);
+                        $date = null;
+                        $startDate = null;
+                        $endDate = null;
+
+                        if (isset($args["date"])) {
+                            $date = $args["date"];
+                        }
+
+                        if (isset($args["startDate"])) {
+                            $startDate = $args["startDate"];
+                        }
+
+                        if (isset($args["endDate"])) {
+                            $endDate = $args["endDate"];
+                        }
+
+                        return $this->calendarService->getEvents(
+                            $args["projectId"],
+                            $args["resources"],
+                            $date,
+                            $startDate,
+                            $endDate
+                        );
+                    }
+                ),
+                "activities" => array(
+                    "type" => Type::listOf($a),
+                    "resolve" => function() {
+                        return true;
                     }
                 ),
                 "user" => array(
-                    "type" => new UserType(),
+                    "type" => $u,
                     "resolve" => function($root) {
                         $jwt = $this->jwtService->decode($root["token"]);
 

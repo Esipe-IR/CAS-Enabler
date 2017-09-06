@@ -1,46 +1,39 @@
 parameters:
   env: dev
-
-  keys.dir: /../var/keys/
   host: perso-etudiant.u-pem.fr
+  keys.dir: /../var/keys/
 
-  calendar.config:
+  ade.config:
     host: https://edt.u-pem.fr/jsp/webapi
-    project_id: 19
     login: visuedt
     password: visuedt
-    resources_mapping:
-      ir1: 1640
 
-  ldap.host: ldap://vmldapetud1.u-pem.fr/
-  ldap.fake_user:
-    homedirectory:
-      - /home/6ir1/test
-    givenname:
-      - test
-    sn:
-      - test
-    uid:
-      - test
-    mail:
-      - test@test.fr
-    supannetuid:
-      - 424242
-    accountstatus:
-      - true
-  ldap.class_mapping:
-    6ir1: ir1
+  ldap.config:
+    host: ldap://vmldapetud1.u-pem.fr/
+    fake_user:
+      homedirectory:
+        - /home/6ir1/test
+      givenname:
+        - test
+      sn:
+        - test
+      uid:
+        - test
+      mail:
+        - test@test.fr
+      supannetuid:
+        - 424242
+      accountstatus:
+        - true
 
-  cas.fake_user:
-    user: test
-
-  cas.enabler.auth:
+  cas.config:
     username_attribute: user
     query_service_parameter: service
     query_ticket_parameter: ticket
     options:
       env: "%env%"
-      default_user: "%cas.fake_user%"
+      default_user:
+        user: test
     server_login_url: https://cas.u-pem.fr/login
     server_validation_url: https://cas.u-pem.fr/serviceValidate
     server_logout_url: https://cas.u-pem.fr/logout
@@ -57,7 +50,7 @@ parameters:
 services:
   ldap.service:
     class: AppBundle\Service\LdapService
-    arguments: ["%ldap.host%", "%env%", "%ldap.fake_user%"]
+    arguments: ["%ldap.config%", "%env%"]
   
   response.service:
     class: AppBundle\Service\ResponseService
@@ -73,11 +66,15 @@ services:
 
   user.service:
     class: AppBundle\Service\UserService
-    arguments: ["@doctrine.orm.entity_manager", "@ldap.service", "%ldap.class_mapping%"]
+    arguments: ["@doctrine.orm.entity_manager", "@ldap.service"]
+
+  ade.service:
+    class: AppBundle\Service\ADEService
+    arguments: ["%ade.config%"]
 
   calendar.service:
     class: AppBundle\Service\CalendarService
-    arguments: ["%calendar.config%", "%kernel.root_dir%"]
+    arguments: ["@ade.service", "%kernel.root_dir%"]
 
   query.type:
     class: AppBundle\GraphQL\QueryType
@@ -85,4 +82,4 @@ services:
 
   cas.enabler.authenticator:
     class: AppBundle\Security\CasEnablerAuthenticator
-    arguments: ["%cas.enabler.auth%"]
+    arguments: ["%cas.config%"]
