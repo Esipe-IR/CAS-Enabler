@@ -9,21 +9,20 @@ namespace AppBundle\Service;
 class LdapService
 {
     private $host;
+    private $fakeUser;    
     private $env;
-    private $fakeUser;
     private $ds;
 
     /**
      * LdapService constructor.
-     * @param $host
+     * @param array $ldap
      * @param $env
-     * @param array $fakeUser
      */
-    public function __construct($host, $env, array $fakeUser)
+    public function __construct(array $ldap, $env)
     {
-        $this->host = $host;
+        $this->host = $ldap["host"];
+        $this->fakeUser = $ldap["fake_user"];        
         $this->env = $env;
-        $this->fakeUser = $fakeUser;
         $this->ds = null;
     }
     

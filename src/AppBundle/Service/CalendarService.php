@@ -2,99 +2,93 @@
 
 namespace AppBundle\Service;
 
-use GuzzleHttp\Client;
-use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\Filesystem\Filesystem;
 
 class CalendarService
 {
-    private $host;
-    private $projectId;
-    private $login;
-    private $password;
-    private $resourcesMapping;
+    private $adeService;
+    private $rootDir;
 
-    public function __construct($config)
+    public function __construct(ADEService $adeService, $rootDir)
     {
-        $this->host = $config["host"];
-        $this->projectId = $config["project_id"];
-        $this->login = $config["login"];
-        $this->password = $config["password"];
-        $this->resourcesMapping = $config["resources_mapping"];
+        $this->adeService = $adeService;
+        $this->rootDir = $rootDir;
     }
 
-    public function getResourcesByClass($class)
+    public function getProjects()
     {
-        return $this->resourcesMapping[$class];
-    }
-    
-    public function raw(ParameterBag $query)
-    {
-        $client = new Client();
-        $response = $client->get($this->host, array(
-           "query" => $query->all()
-        ));
+        $projects = $this->adeService->getProjects();
 
-        return new \SimpleXMLElement($response->getBody());
-    }
-
-    public function getResources($detail = 13)
-    {
-        $client = new Client();
-        $response = $client->get($this->host, array(
-            "query" => array(
-                "function" => "getResources",
-                "projectId" => $this->projectId,
-                "detail" => $detail ? $detail : 13,
-                "login" => $this->login,
-                "password" => $this->password
-            )
-        ));
-
-        return new \SimpleXMLElement($response->getBody());
-    }
-    
-    public function getActivities($resources, $detail = 17)
-    {
-        $client = new Client();
-        $response = $client->get($this->host, array(
-            "query" => array(
-                "function" => "getActivities",
-                "projectId" => $this->projectId,
-                "resources" => $resources,
-                "detail" => $detail ? $detail : 17,
-                "login" => $this->login,
-                "password" => $this->password
-            )
-        ));
-
-        return new \SimpleXMLElement($response->getBody());
-    }
-
-    /**
-     * @param $resources
-     * @param array $request
-     * @return \SimpleXMLElement
-     */
-    public function getEvents($resources, array $request)
-    {
-        $query = array_merge(array(
-            "function" => "getEvents",
-            "projectId" => $this->projectId,
-            "resources" => $resources,
-            "detail" => 7,
-            "login" => $this->login,
-            "password" => $this->password
-        ), $request);
-
-        if (isset($query["detail"]) && $query["detail"] > 8) {
-            $query["detail"] = 8;
+        if (!isset($projects["project"])) {
+            throw new \Exception("ADE error");
         }
 
-        $client = new Client();
-        $response = $client->get($this->host, array(
-            "query" => $query
-        ));
+        $array = array();
+        foreach ($projects["project"] as $k => $r) {
+            $array[$k] = $r["@attributes"];
+        }
 
-        return new \SimpleXMLElement($response->getBody());
+        return $array;
+    }
+
+    public function getResources($projectId)
+    {
+        $fs = new Filesystem();
+        $filename = $this->rootDir . "/../var/api/resources-" . $projectId . ".json";
+
+        if ($fs->exists($filename)) {
+            $json = file_get_contents($filename);
+            return json_decode($json, true);   
+        }
+
+        $arr = $this->adeService->getResources($projectId);
+        
+        if (!isset($arr["resource"])) {
+            throw new \Exception("ADE error");
+        }
+        
+        $array = array();
+
+        foreach ($arr["resource"] as $k=>$r) {
+            $array[$r["@attributes"]["id"]] = $r["@attributes"];
+            $array[$r["@attributes"]["id"]]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
+        }
+
+        ksort($array);
+        $json = json_encode($array);
+        file_put_contents($filename, $json);
+
+        return $array;
+    }
+
+    public function getEvents($projectId, $resources, $date, $startDate, $endDate)
+    {
+        $events = $this->adeService->getEvents($projectId, $resources, $date, $startDate, $endDate);
+
+        if (!isset($events["event"])) {
+            throw new \Exception("ADE error");
+        }
+
+        $array = array();
+        foreach ($events["event"] as $k=>$r) {
+            $array[$k] = $r["@attributes"];
+            $array[$k]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
+
+            foreach ($r["resources"]["resource"] as $re) {
+                if ($re["@attributes"]["category"] == "trainee") {
+                    $array[$k]["class"][] = $re["@attributes"]["name"];
+                }
+
+                if ($re["@attributes"]["category"] == "instructor") {
+                    $array[$k]["instructor"] = $re["@attributes"]["name"];
+                }
+
+                if ($re["@attributes"]["category"] == "classroom") {
+                    $array[$k]["classroom"] = $re["@attributes"]["name"];
+                }
+            }
+        }
+        
+        return $array;
     }
 }

@@ -12,7 +12,6 @@ class User
     private $lastname;
     private $email;
     private $etuId;
-    private $class;
     private $status;
     private $homeDir;
 
@@ -137,30 +136,6 @@ class User
     }
 
     /**
-     * Set class
-     *
-     * @param string $class
-     *
-     * @return User
-     */
-    public function setClass($class)
-    {
-        $this->class = $class;
-
-        return $this;
-    }
-
-    /**
-     * Get class
-     *
-     * @return string
-     */
-    public function getClass()
-    {
-        return $this->class;
-    }
-
-    /**
      * Set status
      *
      * @param boolean $status
@@ -216,7 +191,6 @@ class User
             "lastname" => $this->getLastname(),
             "email" => $this->getEmail(),
             "etu_id" => $this->getEtuId(),
-            "class" => $this->getClass(),
             "status" => $this->getStatus(),
             "home_dir" => $this->getHomeDir()
         );

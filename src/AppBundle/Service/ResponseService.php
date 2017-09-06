@@ -36,7 +36,7 @@ class ResponseService
         $response->setData(array(
             'type'      => $type,
             'code'      => $code,
-            'scope'     => "UPEM-Api",
+            'scope'     => "UPEM-Core",
             'src'       => "CORE",
             'data'      => $data,
             'error'     => $error
@@ -44,7 +44,7 @@ class ResponseService
 
         if ($expose) {
             $response->headers->set("Access-Control-Allow-Origin", "*");
-            $response->headers->set("Access-Control-Allow-Headers", "Token");
+            $response->headers->set("Access-Control-Allow-Headers", "Authorization");
             $response->headers->set("Content-Type", "application/json;charset=UTF-8");
         }
 
