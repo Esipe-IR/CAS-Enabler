@@ -28,9 +28,6 @@ class UserType extends ObjectType
                     "etuId" => array(
                         "type" => Type::int()
                     ),
-                    "class" => array(
-                        "type" => Type::string()
-                    ),
                     "status" => array(
                         "type" => Type::boolean()
                     ),
