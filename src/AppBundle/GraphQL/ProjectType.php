@@ -14,7 +14,7 @@ class ProjectType extends ObjectType
             "fields" => function() {
                 return array(
                     "id" => array(
-                        "type" => Type::nonNull(Type::string())
+                        "type" => Type::nonNull(Type::int())
                     ),
                     "name" => array(
                         "type" => Type::string()
