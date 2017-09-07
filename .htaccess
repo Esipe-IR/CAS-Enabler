@@ -8,4 +8,4 @@ RewriteRule /web/app.php - [L]
 RewriteRule ^bundles/(.*)$ /web/bundles/$1  [QSA,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*) /~vrasquie/cas/web/app.php [QSA,L]
+RewriteRule ^(.*) /~vrasquie/api/web/app.php [QSA,L]
