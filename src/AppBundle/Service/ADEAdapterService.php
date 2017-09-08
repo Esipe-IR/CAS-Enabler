@@ -34,7 +34,7 @@ class ADEAdapterService
                 case "instructor":
                     $event["instructor"] = $resource["@attributes"]["name"];
                     break;
-                case "":
+                case "classroom":
                     $event["classroom"] = $resource["@attributes"]["name"];
                     break;
             }

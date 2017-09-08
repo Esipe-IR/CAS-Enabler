@@ -139,9 +139,9 @@ class CalendarService
      *
      * @throws \Exception
      */
-    public function getEvents($projectId, $resources, $date)
+    public function getEvents($projectId, $resources, $startDate, $endDate)
     {
-        $raw = $this->adeService->getEvents($projectId, $resources, $date, null, null);
+        $raw = $this->adeService->getEvents($projectId, $resources, null, $startDate, $endDate);
 
         if (!isset($raw["event"])) {
             throw new \Exception("ADE error");

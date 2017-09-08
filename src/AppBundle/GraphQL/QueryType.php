@@ -133,7 +133,10 @@ class QueryType extends ObjectType
                         "resources" => [
                             "type" => Type::nonNull(Type::string()),
                         ],
-                        "date" => [
+                        "startDate" => [
+                            "type" => Type::nonNull(Type::string()),
+                        ],
+                        "endDate" => [
                             "type" => Type::nonNull(Type::string()),
                         ],
                     ],
@@ -141,7 +144,8 @@ class QueryType extends ObjectType
                         return $this->calendarService->getEvents(
                             $args["projectId"],
                             $args["resources"],
-                            $args["date"]
+                            $args["startDate"],
+                            $args["endDate"]
                         );
                     },
                 ],
