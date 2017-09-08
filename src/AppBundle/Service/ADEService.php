@@ -72,6 +72,20 @@ class ADEService
 
     /**
      * @param int $projectId
+     * @param int $id
+     *
+     * @return array
+     */
+    public function getResource($projectId, $id)
+    {
+        return $this->callADE("getResources", 13, [
+            "projectId" => $projectId,
+            "id" => $id,
+        ]);
+    }
+
+    /**
+     * @param int $projectId
      * @param string $resources
      * @param string $date
      * @param string $startDate

@@ -52,18 +52,18 @@ class CalendarService
      */
     public function getProjects()
     {
-        $projects = $this->adeService->getProjects();
+        $raw = $this->adeService->getProjects();
 
-        if (!isset($projects["project"])) {
+        if (!isset($raw["project"])) {
             throw new \Exception("ADE error");
         }
 
-        $array = [];
-        foreach ($projects["project"] as $k => $r) {
-            $array[$k] = $r["@attributes"];
+        $projects = [];
+        foreach ($raw["project"] as $k => $r) {
+            $projects[$k] = $this->adapterService->adaptProject($r);
         }
 
-        return $array;
+        return $projects;
     }
 
     /**
@@ -84,14 +84,14 @@ class CalendarService
             return json_decode($json, true);
         }
 
-        $arr = $this->adeService->getResources($projectId);
+        $raw = $this->adeService->getResources($projectId);
 
-        if (!isset($arr["resource"])) {
+        if (!isset($raw["resource"])) {
             throw new \Exception("ADE error");
         }
 
         $resources = [];
-        foreach ($arr["resource"] as $r) {
+        foreach ($raw["resource"] as $r) {
             $resources[$r["@attributes"]["id"]] = $this->adapterService->adaptResource($r);
         }
 
@@ -100,6 +100,25 @@ class CalendarService
         file_put_contents($filename, $json);
 
         return $resources;
+    }
+
+    /**
+     * @param int $projectId
+     * @param int $id
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
+    public function getResource($projectId, $id)
+    {
+        $raw = $this->adeService->getResource($projectId, $id);
+
+        if (!isset($raw["resource"])) {
+            throw new \Exception("ADE error");
+        }
+
+        return $this->adapterService->adaptResource($raw["resource"][0]);
     }
 
     /**

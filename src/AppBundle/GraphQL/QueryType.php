@@ -83,9 +83,10 @@ class QueryType extends ObjectType
                         ],
                     ],
                     "resolve" => function ($root, $args) {
-                        $resources = $this->calendarService->getResources($args["projectId"]);
-
-                        return $resources[$args["id"]];
+                        return $this->calendarService->getResource(
+                            $args["projectId"],
+                            $args["id"]
+                        );
                     },
                 ],
                 "resources" => [
