@@ -1,5 +1,14 @@
 <?php
-
+/*
+ * This file is part of UPEM API project.
+ *
+ * Based on https://github.com/Esipe-IR/UPEM-API
+ *
+ * (c) 2016-2017 Vincent Rasquier <vincent.rsbs@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 namespace AppBundle\Service;
 
 use AppBundle\Entity\User;
@@ -7,11 +16,17 @@ use \Firebase\JWT\JWT;
 
 /**
  * Class JWTService
- * @package AppBundle\Service
  */
 class JWTService
 {
+    /**
+     * @var RSAKeyService
+     */
     private $rsakeyService;
+
+    /**
+     * @var string
+     */
     private $host;
 
     /**
@@ -27,7 +42,8 @@ class JWTService
 
     /**
      * Generate a Json Web Token
-     * @param User $user
+     * @param string $uid
+     *
      * @return null|string
      */
     public function generate($uid)
@@ -37,15 +53,15 @@ class JWTService
         if (!$privateKey || !$uid) {
             return null;
         }
-        
-        $token = array(
+
+        $token = [
             "iss" => $this->host,
             "aud" => $this->host,
             "iat" => time(),
             "nbf" => time(),
             "exp" => time() + 1000,
-            "uid" => $uid
-        );
+            "uid" => $uid,
+        ];
 
         try {
             return JWT::encode($token, $privateKey, RSAKeyService::ALG);
@@ -57,6 +73,7 @@ class JWTService
     /**
      * Verify if Json Web Token is valid
      * @param string $token
+     *
      * @return bool
      */
     public function verify($token)
@@ -64,7 +81,7 @@ class JWTService
         $publicKey = $this->rsakeyService->getPublicKey();
 
         try {
-            JWT::decode($token, $publicKey, array(RSAKeyService::ALG));
+            JWT::decode($token, $publicKey, [RSAKeyService::ALG]);
         } catch (\Exception $e) {
             return false;
         }
@@ -75,6 +92,7 @@ class JWTService
     /**
      * Decode Json Web Token to plain object
      * @param string $token
+     *
      * @return null|object
      */
     public function decode($token)
@@ -82,7 +100,7 @@ class JWTService
         $publicKey = $this->rsakeyService->getPublicKey();
 
         try {
-            $jwt = JWT::decode($token, $publicKey, array(RSAKeyService::ALG));
+            $jwt = JWT::decode($token, $publicKey, [RSAKeyService::ALG]);
         } catch (\Exception $e) {
             return null;
         }

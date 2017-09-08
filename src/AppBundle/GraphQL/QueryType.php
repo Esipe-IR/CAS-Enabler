@@ -1,5 +1,14 @@
 <?php
-
+/*
+ * This file is part of UPEM API project.
+ *
+ * Based on https://github.com/Esipe-IR/UPEM-API
+ *
+ * (c) 2016-2017 Vincent Rasquier <vincent.rsbs@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 namespace AppBundle\GraphQL;
 
 use AppBundle\Service\CalendarService;
@@ -8,117 +17,143 @@ use AppBundle\Service\UserService;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * Class QueryType
+ */
 class QueryType extends ObjectType
 {
+    /**
+     * @var CalendarService
+     */
     private $calendarService;
+
+    /**
+     * @var JWTService
+     */
     private $jwtService;
+
+    /**
+     * @var UserService
+     */
     private $userService;
 
-    public function __construct(
-        CalendarService $calendarService,
-        JWTService $jwtService,
-        UserService $userService
-    ) {
+    public static $PROJECT;
+    public static $RESOURCE;
+    public static $EVENT;
+    public static $DAY;
+    public static $ACTIVITY;
+    public static $USER;
+
+    /**
+     * QueryType constructor.
+     * @param CalendarService $calendarService
+     * @param JWTService $jwtService
+     * @param UserService $userService
+     */
+    public function __construct(CalendarService $calendarService, JWTService $jwtService, UserService $userService)
+    {
         $this->calendarService = $calendarService;
         $this->jwtService = $jwtService;
         $this->userService = $userService;
-        
-        $p = new ProjectType();
-        $r = new ResourceType();
-        $a = new ActivityType();
-        $e = new EventType();
-        $u = new UserType();
 
-        $config = array(
+        self::$PROJECT = new ProjectType();
+        self::$RESOURCE = new ResourceType();
+        self::$EVENT = new EventType();
+        self::$DAY = new DayType();
+        self::$ACTIVITY = new ActivityType();
+        self::$USER = new UserType();
+
+        $config = [
             "name" => "Query",
-            "fields" => array(
-                "projects" => array(
-                    "type" => Type::listOf($p),
-                    "resolve" => function() {
+            "fields" => [
+                "projects" => [
+                    "type" => Type::listOf(self::$PROJECT),
+                    "resolve" => function () {
                         return $this->calendarService->getProjects();
-                    }
-                ),
-                "resource" => array(
-                    "type" => $r,
-                    "args" => array(
-                        "projectId" => array(
-                            "type" => Type::nonNull(Type::int())
-                        ),
-                        "id" => array(
-                            "type" => Type::nonNull(Type::int())
-                        )
-                    ),
-                    "resolve" => function($root, $args) {
-                        $arr = $this->calendarService->getResources($args["projectId"]);
+                    },
+                ],
+                "resource" => [
+                    "type" => self::$RESOURCE,
+                    "args" => [
+                        "projectId" => [
+                            "type" => Type::nonNull(Type::int()),
+                        ],
+                        "id" => [
+                            "type" => Type::nonNull(Type::int()),
+                        ],
+                    ],
+                    "resolve" => function ($root, $args) {
+                        $resources = $this->calendarService->getResources($args["projectId"]);
 
-                        return $arr[$args["id"]];
-                    }
-                ),
-                "resources" => array(
-                    "type" => Type::listOf($r),
-                    "args" => array(
-                        "projectId" => array(
-                            "type" => Type::nonNull(Type::int())
-                        )
-                    ),
-                    "resolve" => function($root, $args) {
+                        return $resources[$args["id"]];
+                    },
+                ],
+                "resources" => [
+                    "type" => Type::listOf(self::$RESOURCE),
+                    "args" => [
+                        "projectId" => [
+                            "type" => Type::nonNull(Type::int()),
+                        ],
+                    ],
+                    "resolve" => function ($root, $args) {
                         return $this->calendarService->getResources($args["projectId"]);
-                    }
-                ),
-                "events" => array(
-                    "type" => Type::listOf($e),
-                    "args" => array(
-                        "projectId" => array(
-                            "type" => Type::nonNull(Type::int())
-                        ),
-                        "resources" => array(
-                            "type" => Type::nonNull(Type::string())
-                        ),
-                        "date" => array(
-                            "type" => Type::string()
-                        ),
-                        "startDate" => array(
-                            "type" => Type::string()
-                        ),
-                        "endDate" => array(
-                            "type" => Type::string()
-                        )
-                    ),
-                    "resolve" => function($root, $args) {
-                        $date = null;
-                        $startDate = null;
-                        $endDate = null;
-
-                        if (isset($args["date"])) {
-                            $date = $args["date"];
-                        }
-
-                        if (isset($args["startDate"])) {
-                            $startDate = $args["startDate"];
-                        }
-
-                        if (isset($args["endDate"])) {
-                            $endDate = $args["endDate"];
-                        }
-
+                    },
+                ],
+                "days" => [
+                    "type" => Type::listOf(self::$DAY),
+                    "args" => [
+                        "projectId" => [
+                            "type" => Type::nonNull(Type::int()),
+                        ],
+                        "resources" => [
+                            "type" => Type::nonNull(Type::string()),
+                        ],
+                        "startDate" => [
+                            "type" => Type::nonNull(Type::string()),
+                        ],
+                        "endDate" => [
+                            "type" => Type::nonNull(Type::string()),
+                        ],
+                    ],
+                    "resolve" => function ($root, $args) {
+                        return $this->calendarService->getDays(
+                            $args["projectId"],
+                            $args["resources"],
+                            $args["startDate"],
+                            $args["endDate"]
+                        );
+                    },
+                ],
+                "events" => [
+                    "type" => Type::listOf(self::$EVENT),
+                    "args" => [
+                        "projectId" => [
+                            "type" => Type::nonNull(Type::int()),
+                        ],
+                        "resources" => [
+                            "type" => Type::nonNull(Type::string()),
+                        ],
+                        "date" => [
+                            "type" => Type::nonNull(Type::string()),
+                        ],
+                    ],
+                    "resolve" => function ($root, $args) {
                         return $this->calendarService->getEvents(
                             $args["projectId"],
                             $args["resources"],
-                            $date,
-                            $startDate,
-                            $endDate
+                            $args["date"]
                         );
-                    }
-                ),
-                "activities" => array(
-                    "type" => Type::listOf($a),
-                    "resolve" => function() {
+                    },
+                ],
+                "activities" => [
+                    "type" => Type::listOf(self::$ACTIVITY),
+                    "resolve" => function () {
                         return true;
-                    }
-                ),
-                "user" => array(
-                    "type" => $u,
-                    "resolve" => function($root) {
+                    },
+                ],
+                "user" => [
+                    "type" => self::$USER,
+                    "resolve" => function ($root) {
                         $jwt = $this->jwtService->decode($root["token"]);
 
                         if (!$jwt) {
@@ -126,10 +161,10 @@ class QueryType extends ObjectType
                         }
 
                         return $this->userService->getUser($jwt->uid)->toArray();
-                    }
-                )
-            ),
-        );
+                    },
+                ],
+            ],
+        ];
 
         parent::__construct($config);
     }

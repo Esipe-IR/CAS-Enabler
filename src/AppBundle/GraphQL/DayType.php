@@ -15,21 +15,24 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class ActivityType
+ * Class DayType
  */
-class ActivityType extends ObjectType
+class DayType extends ObjectType
 {
     /**
-     * ActivityType constructor.
+     * DayType constructor.
      */
     public function __construct()
     {
         $config = [
-            "name" => "Activity",
+            "name" => "Day",
             "fields" => function () {
                 return [
-                    "id" => [
+                    "date" => [
                         "type" => Type::nonNull(Type::string()),
+                    ],
+                    "events" => [
+                        "type" => Type::listOf(QueryType::$EVENT),
                     ],
                 ];
             },

@@ -1,20 +1,55 @@
 <?php
-
+/*
+ * This file is part of UPEM API project.
+ *
+ * Based on https://github.com/Esipe-IR/UPEM-API
+ *
+ * (c) 2016-2017 Vincent Rasquier <vincent.rsbs@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 namespace AppBundle\Service;
 
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * Class CalendarService
+ */
 class CalendarService
 {
+    /**
+     * @var ADEService
+     */
     private $adeService;
+
+    /**
+     * @var ADEAdapterService
+     */
+    private $adapterService;
+
+    /**
+     * @var string
+     */
     private $rootDir;
 
-    public function __construct(ADEService $adeService, $rootDir)
+    /**
+     * CalendarService constructor.
+     * @param ADEService $adeService
+     * @param $rootDir
+     */
+    public function __construct(ADEService $adeService, ADEAdapterService $adapterService, $rootDir)
     {
         $this->adeService = $adeService;
+        $this->adapterService = $adapterService;
         $this->rootDir = $rootDir;
     }
 
+    /**
+     * @return array
+     *
+     * @throws \Exception
+     */
     public function getProjects()
     {
         $projects = $this->adeService->getProjects();
@@ -23,7 +58,7 @@ class CalendarService
             throw new \Exception("ADE error");
         }
 
-        $array = array();
+        $array = [];
         foreach ($projects["project"] as $k => $r) {
             $array[$k] = $r["@attributes"];
         }
@@ -31,64 +66,92 @@ class CalendarService
         return $array;
     }
 
+    /**
+     * @param $projectId
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
     public function getResources($projectId)
     {
         $fs = new Filesystem();
-        $filename = $this->rootDir . "/../var/api/resources-" . $projectId . ".json";
+        $filename = $this->rootDir."/../var/api/resources-".$projectId.".json";
 
         if ($fs->exists($filename)) {
             $json = file_get_contents($filename);
-            return json_decode($json, true);   
+
+            return json_decode($json, true);
         }
 
         $arr = $this->adeService->getResources($projectId);
-        
+
         if (!isset($arr["resource"])) {
             throw new \Exception("ADE error");
         }
-        
-        $array = array();
 
-        foreach ($arr["resource"] as $k=>$r) {
-            $array[$r["@attributes"]["id"]] = $r["@attributes"];
-            $array[$r["@attributes"]["id"]]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
+        $resources = [];
+        foreach ($arr["resource"] as $r) {
+            $resources[$r["@attributes"]["id"]] = $this->adapterService->adaptResource($r);
         }
 
-        ksort($array);
-        $json = json_encode($array);
+        ksort($resources);
+        $json = json_encode($resources);
         file_put_contents($filename, $json);
 
-        return $array;
+        return $resources;
     }
 
-    public function getEvents($projectId, $resources, $date, $startDate, $endDate)
+    /**
+     * @param int $projectId
+     * @param string $resources
+     * @param string $startDate
+     * @param string $endDate
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
+    public function getDays($projectId, $resources, $startDate, $endDate)
     {
-        $events = $this->adeService->getEvents($projectId, $resources, $date, $startDate, $endDate);
+        $raw = $this->adeService->getEvents($projectId, $resources, null, $startDate, $endDate);
 
-        if (!isset($events["event"])) {
+        if (!isset($raw["event"])) {
             throw new \Exception("ADE error");
         }
 
-        $array = array();
-        foreach ($events["event"] as $k=>$r) {
-            $array[$k] = $r["@attributes"];
-            $array[$k]["name"] = str_replace("??", "é", $r["@attributes"]["name"]);
-
-            foreach ($r["resources"]["resource"] as $re) {
-                if ($re["@attributes"]["category"] == "trainee") {
-                    $array[$k]["class"][] = $re["@attributes"]["name"];
-                }
-
-                if ($re["@attributes"]["category"] == "instructor") {
-                    $array[$k]["instructor"] = $re["@attributes"]["name"];
-                }
-
-                if ($re["@attributes"]["category"] == "classroom") {
-                    $array[$k]["classroom"] = $re["@attributes"]["name"];
-                }
-            }
+        $days = [];
+        foreach ($raw["event"] as $r) {
+            $date = $r["@attributes"]["date"];
+            $days[$date]["date"] = $date;
+            $days[$date]["events"][] = $this->adapterService->adaptEvent($r);
         }
-        
-        return $array;
+
+        return $days;
+    }
+
+    /**
+     * @param int $projectId
+     * @param string $resources
+     * @param string $date
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
+    public function getEvents($projectId, $resources, $date)
+    {
+        $raw = $this->adeService->getEvents($projectId, $resources, $date, null, null);
+
+        if (!isset($raw["event"])) {
+            throw new \Exception("ADE error");
+        }
+
+        $events = [];
+        foreach ($raw["event"] as $k => $r) {
+            $events[$k] = $this->adapterService->adaptEvent($r);
+        }
+
+        return $events;
     }
 }

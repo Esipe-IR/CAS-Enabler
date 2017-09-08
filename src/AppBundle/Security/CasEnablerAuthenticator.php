@@ -1,5 +1,14 @@
 <?php
-
+/*
+ * This file is part of UPEM API project.
+ *
+ * Based on https://github.com/Esipe-IR/UPEM-API
+ *
+ * (c) 2016-2017 Vincent Rasquier <vincent.rsbs@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 namespace AppBundle\Security;
 
 use GuzzleHttp\Client;
@@ -14,16 +23,15 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
  * Class CasEnablerAuthenticator
- * @package AppBundle\Security
  */
 class CasEnablerAuthenticator extends AbstractGuardAuthenticator
 {
-    protected $server_login_url;
-    protected $server_validation_url;
-    protected $xml_namespace;
-    protected $username_attribute;
-    protected $query_ticket_parameter;
-    protected $query_service_parameter;
+    protected $serverLoginUrl;
+    protected $serverValidationUrl;
+    protected $xmlNamespace;
+    protected $usernameAttribute;
+    protected $queryTicketParameter;
+    protected $queryServiceParameter;
     protected $options;
 
     /**
@@ -32,32 +40,32 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
      */
     public function __construct($config)
     {
-        $this->server_login_url = $config['server_login_url'];
-        $this->server_validation_url = $config['server_validation_url'];
-        $this->xml_namespace = $config['xml_namespace'];
-        $this->username_attribute = $config['username_attribute'];
-        $this->query_service_parameter = $config['query_service_parameter'];
-        $this->query_ticket_parameter = $config['query_ticket_parameter'];
+        $this->serverLoginUrl = $config['server_login_url'];
+        $this->serverValidationUrl = $config['server_validation_url'];
+        $this->xmlNamespace = $config['xml_namespace'];
+        $this->usernameAttribute = $config['username_attribute'];
+        $this->queryServiceParameter = $config['query_service_parameter'];
+        $this->queryTicketParameter = $config['query_ticket_parameter'];
         $this->options = $config['options'];
     }
 
     /**
      * Called on every request. Return whatever credentials you want,
      * or null to stop authentication.
+     *
+     * @return array|null
      */
     public function getCredentials(Request $request)
     {
-        if ($request->get($this->query_ticket_parameter)) {
-            $url = $this->server_validation_url.'?'.$this->query_ticket_parameter.'='.
-                $request->get($this->query_ticket_parameter).'&'.
-                $this->query_service_parameter.'='.urlencode($this->removeCasTicket($request->getUri()));
+        if ($request->get($this->queryTicketParameter)) {
+            $url = $this->serverValidationUrl.'?'.$this->queryTicketParameter.'='.$request->get($this->queryTicketParameter).'&'.$this->queryServiceParameter.'='.urlencode($this->removeCasTicket($request->getUri()));
 
             $client = new Client();
             $response = $client->request('GET', $url, $this->options);
 
             $string = $response->getBody()->getContents();
 
-            $xml = new \SimpleXMLElement($string, 0, false, $this->xml_namespace, true);
+            $xml = new \SimpleXMLElement($string, 0, false, $this->xmlNamespace, true);
 
             if (isset($xml->authenticationSuccess)) {
                 return (array) $xml->authenticationSuccess;
@@ -75,12 +83,13 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
      * Calls the UserProvider providing a valid User
      * @param array $credentials
      * @param UserProviderInterface $userProvider
-     * @return bool
+     *
+     * @return mixed
      */
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        if (isset($credentials[$this->username_attribute])) {
-            return $userProvider->loadUserByUsername($credentials[$this->username_attribute]);
+        if (isset($credentials[$this->usernameAttribute])) {
+            return $userProvider->loadUserByUsername($credentials[$this->usernameAttribute]);
         }
 
         return null;
@@ -90,6 +99,7 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
      * Mandatory but not in use in a remote authentication
      * @param $credentials
      * @param UserInterface $user
+     *
      * @return bool
      */
     public function checkCredentials($credentials, UserInterface $user)
@@ -102,11 +112,12 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
      * @param Request $request
      * @param TokenInterface $token
      * @param $providerKey
+     *
      * @return null
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        if ($request->query->has($this->query_ticket_parameter)) {
+        if ($request->query->has($this->queryTicketParameter)) {
             return new RedirectResponse($this->removeCasTicket($request->getUri()));
         }
 
@@ -117,27 +128,31 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
      * Mandatory but not in use in a remote authentication
      * @param Request $request
      * @param AuthenticationException $exception
+     *
      * @return JsonResponse
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        $data = array(
-            'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
-        );
+        $data = [
+            'message' => strtr($exception->getMessageKey(), $exception->getMessageData()),
+        ];
 
         return new JsonResponse($data, 403);
     }
 
     /**
      * Called when authentication is needed, redirect to your CAS server authentication form
+     *
+     * @return RedirectResponse
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        return new RedirectResponse($this->server_login_url.'?'.$this->query_service_parameter.'='.urlencode($request->getUri()));
+        return new RedirectResponse($this->serverLoginUrl.'?'.$this->queryServiceParameter.'='.urlencode($request->getUri()));
     }
 
     /**
      * Mandatory but not in use in a remote authentication
+     *
      * @return bool
      */
     public function supportsRememberMe()
@@ -147,38 +162,41 @@ class CasEnablerAuthenticator extends AbstractGuardAuthenticator
 
     /**
      * Strip the CAS 'ticket' parameter from a uri.
+     *
+     * @return
      */
-    protected function removeCasTicket($uri) {
-        $parsed_url = parse_url($uri);
+    protected function removeCasTicket($uri)
+    {
+        $parsedUrl = parse_url($uri);
 
-        if (empty($parsed_url['query'])) {
-            return $uri;
-        }
-        
-        parse_str($parsed_url['query'], $query_params);
-
-        if (!isset($query_params[$this->query_ticket_parameter])) {
+        if (empty($parsedUrl['query'])) {
             return $uri;
         }
 
-        unset($query_params[$this->query_ticket_parameter]);
-        
-        if (empty($query_params)) {
-            unset($parsed_url['query']);
+        parse_str($parsedUrl['query'], $queryParams);
+
+        if (!isset($queryParams[$this->queryTicketParameter])) {
+            return $uri;
+        }
+
+        unset($queryParams[$this->queryTicketParameter]);
+
+        if (empty($queryParams)) {
+            unset($parsedUrl['query']);
         } else {
-            $parsed_url['query'] = http_build_query($query_params);
+            $parsedUrl['query'] = http_build_query($queryParams);
         }
 
-        $scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
-        $host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
-        $port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
-        $user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
-        $pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';
+        $scheme   = isset($parsedUrl['scheme']) ? $parsedUrl['scheme'].'://' : '';
+        $host     = isset($parsedUrl['host']) ? $parsedUrl['host'] : '';
+        $port     = isset($parsedUrl['port']) ? ':'.$parsedUrl['port'] : '';
+        $user     = isset($parsedUrl['user']) ? $parsedUrl['user'] : '';
+        $pass     = isset($parsedUrl['pass']) ? ':'.$parsedUrl['pass']  : '';
         $pass     = ($user || $pass) ? "$pass@" : '';
-        $path     = isset($parsed_url['path']) ? $parsed_url['path'] : '';
-        $query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
-        $fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
-        
+        $path     = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
+        $query    = isset($parsedUrl['query']) ? '?'.$parsedUrl['query'] : '';
+        $fragment = isset($parsedUrl['fragment']) ? '#'.$parsedUrl['fragment'] : '';
+
         return "$scheme$user$pass$host$port$path$query$fragment";
     }
 }

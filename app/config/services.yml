@@ -72,9 +72,12 @@ services:
     class: AppBundle\Service\ADEService
     arguments: ["%ade.config%"]
 
+  ade.adapter.service:
+    class: AppBundle\Service\ADEAdapterService
+
   calendar.service:
     class: AppBundle\Service\CalendarService
-    arguments: ["@ade.service", "%kernel.root_dir%"]
+    arguments: ["@ade.service", "@ade.adapter.service", "%kernel.root_dir%"]
 
   query.type:
     class: AppBundle\GraphQL\QueryType
