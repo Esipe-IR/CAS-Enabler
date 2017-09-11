@@ -118,7 +118,7 @@ class CalendarService
             throw new \Exception("ADE error");
         }
 
-        return $this->adapterService->adaptResource($raw["resource"][0]);
+        return $this->adapterService->adaptResource($raw["resource"]);
     }
 
     /**
