@@ -57,7 +57,7 @@ class QueryType extends ObjectType
         $this->userService = $userService;
 
         self::$PROJECT = new ProjectType();
-        self::$RESOURCE = new ResourceType();
+        self::$RESOURCE = new ResourceType($calendarService);
         self::$EVENT = new EventType();
         self::$DAY = new DayType();
         self::$ACTIVITY = new ActivityType();

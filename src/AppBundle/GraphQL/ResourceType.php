@@ -11,6 +11,7 @@
  */
 namespace AppBundle\GraphQL;
 
+use AppBundle\Service\CalendarService;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -20,10 +21,17 @@ use GraphQL\Type\Definition\Type;
 class ResourceType extends ObjectType
 {
     /**
+     * @var CalendarService
+     */
+    private $calendarService;
+
+    /**
      * ResourceType constructor.
      */
-    public function __construct()
+    public function __construct(CalendarService $calendarService)
     {
+        $this->calendarService = $calendarService;
+
         $config = [
             "name" => "Resource",
             "fields" => function () {
@@ -48,6 +56,28 @@ class ResourceType extends ObjectType
                     ],
                     "lastWeek" => [
                         "type" => Type::string(),
+                    ],
+                    "events" => [
+                        "type" => Type::listOf(QueryType::$EVENT),
+                        "args" => [
+                            "projectId" => [
+                                "type" => Type::nonNull(Type::int()),
+                            ],
+                            "startDate" => [
+                                "type" => Type::nonNull(Type::string()),
+                            ],
+                            "endDate" => [
+                                "type" => Type::nonNull(Type::string()),
+                            ],
+                        ],
+                        "resolve" => function ($root, $args) {
+                            return $this->calendarService->getEvents(
+                                $args["projectId"],
+                                $root["id"],
+                                $args["startDate"],
+                                $args["endDate"]
+                            );
+                        },
                     ],
                 ];
             },
