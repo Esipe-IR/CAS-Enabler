@@ -107,7 +107,7 @@ class QueryType extends ObjectType
                             "type" => Type::nonNull(Type::int()),
                         ],
                         "resources" => [
-                            "type" => Type::nonNull(Type::string()),
+                            "type" => Type::nonNull(Type::int()),
                         ],
                         "startDate" => [
                             "type" => Type::nonNull(Type::string()),
@@ -132,7 +132,7 @@ class QueryType extends ObjectType
                             "type" => Type::nonNull(Type::int()),
                         ],
                         "resources" => [
-                            "type" => Type::nonNull(Type::string()),
+                            "type" => Type::nonNull(Type::int()),
                         ],
                         "startDate" => [
                             "type" => Type::nonNull(Type::string()),

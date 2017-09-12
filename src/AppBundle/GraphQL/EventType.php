@@ -29,7 +29,7 @@ class EventType extends ObjectType
             "fields" => function () {
                 return [
                     "id" => [
-                        "type" => Type::nonNull(Type::string()),
+                        "type" => Type::nonNull(Type::int()),
                     ],
                     "activityId" => [
                         "type" => Type::string(),

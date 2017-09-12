@@ -2,7 +2,7 @@
 
 {% block body %}
     <button id="connect">
-        Log in with U-PEM
+        Log in with UPEM
     </button>
 {% endblock %}
 
@@ -13,7 +13,7 @@
             xml.responseType = "json";
 
             xml.onreadystatechange = function() {
-                if (xml.readyState == XMLHttpRequest.DONE && xml.status == 200 && window.top != window) {
+                if (xml.readyState === 4 && xml.status === 200 && window.top !== window) {
                     window.top.postMessage(xml.response, "*");
                 }
             };
