@@ -108,8 +108,8 @@ class MainController extends Controller
     public function graphqlExplorerAction()
     {
         return $this->render("actions/explorer.html.twig", [
-            'graphQLUrl' => $this->generateUrl("graphql"),
-            'tokenHeader' => 'Authorization',
+            "graphQLUrl" => $this->generateUrl("graphql"),
+            "tokenHeader" => "Authorization",
         ]);
     }
 }
